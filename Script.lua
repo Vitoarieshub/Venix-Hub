@@ -7,7 +7,7 @@ MakeWindow({
 
         Title = "Venix Hub",
 
-        Animation = "Universal"
+        Animation = "  Universal "
 
     },
 
