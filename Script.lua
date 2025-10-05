@@ -7,7 +7,7 @@ MakeWindow({
 
         Title = "Venix Hub",
 
-        Animation = "  Universal "
+        Animation = "  Universal"
 
     },
 
@@ -1006,3 +1006,29 @@ AddToggle(Config, {
         end
     end
 })
+
+local Lighting = game:GetService("Lighting")
+local nevoaAtiva = false
+
+local function atualizarNevoa()
+    if nevoaAtiva then
+        Lighting.FogStart = 999999
+        Lighting.FogEnd = 1000000
+        Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+    else
+        Lighting.FogStart = 0
+        Lighting.FogEnd = 200
+        Lighting.FogColor = Color3.fromRGB(200, 200, 200)
+    end
+end
+
+AddToggle(Config, {
+    Name = "Remover Névoa",
+    Default = true,
+    Callback = function(Value)
+        nevoaAtiva = Value
+        atualizarNevoa()
+    end
+})
+
+atualizarNevoa()
