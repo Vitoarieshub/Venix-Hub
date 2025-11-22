@@ -898,7 +898,7 @@ AddButton(Teleportes, {
 })
 
 -- Botão: Teleportar para posição salva
-AddButton(Teleportar, {
+AddButton(Teleportes, {
     Name = "Teleportar para posição",
     Callback = function()
         print("Botão foi clicado! Teleportando...")
