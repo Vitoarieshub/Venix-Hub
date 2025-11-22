@@ -669,127 +669,89 @@ AddToggle(Visuais, {
 })
 
 
-
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
-local player = Players.LocalPlayer
-local espEnabled = false
-local skeletons = {}
+local espAtivo = false
+local espLabels = {}
 
-local partsToConnect = {
-    {"Head", "UpperTorso"},
-    {"UpperTorso", "LowerTorso"},
-    {"UpperTorso", "LeftUpperArm"},
-    {"LeftUpperArm", "LeftLowerArm"},
-    {"LeftLowerArm", "LeftHand"},
-    {"UpperTorso", "RightUpperArm"},
-    {"RightUpperArm", "RightLowerArm"},
-    {"RightLowerArm", "RightHand"},
-    {"LowerTorso", "LeftUpperLeg"},
-    {"LeftUpperLeg", "LeftLowerLeg"},
-    {"LeftLowerLeg", "LeftFoot"},
-    {"LowerTorso", "RightUpperLeg"},
-    {"RightUpperLeg", "RightLowerLeg"},
-    {"RightLowerLeg", "RightFoot"},
-}
-
-local function createSkeleton(t)
-    local lines = {}
-    for _ = 1, #partsToConnect do
-        local line = Drawing.new("Line")
-        line.Color = Color3.new(1, 1, 1)
-        line.Thickness = 2
-        line.Transparency = 1
-        line.Visible = false
-        table.insert(lines, line)
+local function criarLabel(player)
+    if espLabels[player] then
+        espLabels[player]:Destroy()
+        espLabels[player] = nil
     end
-    skeletons[t] = {Lines = lines}
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Size = UDim2.new(0, 200, 0, 30)
+    billboard.AlwaysOnTop = true
+
+    local label = Instance.new("TextLabel")
+    label.Parent = billboard
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    label.BackgroundTransparency = 0.2
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 16
+    label.Font = Enum.Font.GothamBold
+    label.BorderSizePixel = 0
+
+    espLabels[player] = billboard
 end
 
-local function removeSkeleton(t)
-    if skeletons[t] then
-        for _, line in ipairs(skeletons[t].Lines) do
-            line:Remove()
+local function atualizar()
+    for player, gui in pairs(espLabels) do
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = player.Character.HumanoidRootPart
+            gui.Adornee = hrp
+
+            local distancia = (LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude
+            gui.TextLabel.Text = string.upper(player.Name) .. " - " .. math.floor(distancia) .. "m"
         end
-        skeletons[t] = nil
     end
 end
 
-local function updateSkeletons()
-    if not espEnabled then
-        for _, s in pairs(skeletons) do
-            for _, l in ipairs(s.Lines) do
-                l.Visible = false
+local function ativarESP()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            criarLabel(player)
+            espLabels[player].Parent = player.Character:WaitForChild("HumanoidRootPart")
+        end
+    end
+
+    Players.PlayerAdded:Connect(function(player)
+        player.CharacterAdded:Connect(function()
+            if espAtivo then
+                criarLabel(player)
+                espLabels[player].Parent = player.Character:WaitForChild("HumanoidRootPart")
             end
-        end
-        return
-    end
-
-    for _, t in pairs(Players:GetPlayers()) do
-        if t ~= player then
-            local c = t.Character
-            local s = skeletons[t]
-            if c and s then
-                for i, conn in ipairs(partsToConnect) do
-                    local p0, p1 = c:FindFirstChild(conn[1]), c:FindFirstChild(conn[2])
-                    local l = s.Lines[i]
-                    if p0 and p1 then
-                        local v0, ok0 = workspace.CurrentCamera:WorldToViewportPoint(p0.Position)
-                        local v1, ok1 = workspace.CurrentCamera:WorldToViewportPoint(p1.Position)
-                        if ok0 and ok1 then
-                            l.From = Vector2.new(v0.X, v0.Y)
-                            l.To = Vector2.new(v1.X, v1.Y)
-                            l.Visible = true
-                        else
-                            l.Visible = false
-                        end
-                    else
-                        l.Visible = false
-                    end
-                end
-            elseif s then
-                for _, l in ipairs(s.Lines) do
-                    l.Visible = false
-                end
-            end
-        end
-    end
-end
-
-RunService.RenderStepped:Connect(updateSkeletons)
-
-Players.PlayerAdded:Connect(function(t)
-    if t ~= player then
-        t.CharacterAdded:Connect(function()
-            task.wait(1)
-            removeSkeleton(t)
-            createSkeleton(t)
         end)
-        if t.Character then createSkeleton(t) end
-    end
-end)
+    end)
 
-Players.PlayerRemoving:Connect(removeSkeleton)
-
-for _, t in pairs(Players:GetPlayers()) do
-    if t ~= player then
-        t.CharacterAdded:Connect(function()
-            task.wait(1)
-            removeSkeleton(t)
-            createSkeleton(t)
-        end)
-        if t.Character then createSkeleton(t) end
-    end
+    RunService.RenderStepped:Connect(function()
+        if espAtivo then
+            atualizar()
+        end
+    end)
 end
 
 AddToggle(Visuais, {
-    Name = "ESP Skeleton",
+    Name = "Esp nome",
     Default = false,
     Callback = function(state)
-        espEnabled = state
+        espAtivo = state
+
+        if state then
+            ativarESP()
+        else
+            for _, gui in pairs(espLabels) do
+                gui:Destroy()
+            end
+            espLabels = {}
+        end
     end
 })
+
 
 
 local Players = game:GetService("Players")
