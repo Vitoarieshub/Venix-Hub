@@ -880,94 +880,41 @@ AddButton(Teleportes, {
 	end
 })
 
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 
-local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
+-- Variável para guardar a posição salva
+local savedCFrame = nil
 
-local clickTPAtivado = false
-local marcador = nil
-local mouseConnection = nil
-
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-
-local screen = Instance.new("ScreenGui")
-screen.Name = "ClickTPGui"
-screen.Parent = PlayerGui
-
-local frame = Instance.new("Frame")
-frame.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-frame.Size = UDim2.new(0, 180, 0, 50)
-frame.Position = UDim2.new(0.4, -90, 0.75, 0)
-frame.AnchorPoint = Vector2.new(0.5, 0.5)
-frame.Parent = screen
-
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 14)
-corner.Parent = frame
-
-local function AtualizarGUI(estado)
-	if estado then
-		frame.BackgroundColor3 = Color3.fromRGB(0, 255, 170)
-	else
-		frame.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-	end
-end
-
-AtualizarGUI(false)
-
-local function criarEsfera(pos)
-	if marcador then marcador:Destroy() end
-
-	marcador = Instance.new("Part")
-	marcador.Shape = Enum.PartType.Ball
-	marcador.Color = Color3.fromRGB(173, 216, 230)
-	marcador.Size = Vector3.new(1.5, 1.5, 1.5)
-	marcador.Anchored = true
-	marcador.CanCollide = false
-	marcador.Material = Enum.Material.Neon
-	marcador.Position = pos + Vector3.new(0, 0.75, 0)
-	marcador.Parent = workspace
-
-	task.delay(3, function()
-		if marcador then marcador:Destroy() end
-	end)
-end
-
-local function onClick()
-	if not clickTPAtivado then return end
-
-	local target = Mouse.Hit
-	if target then
-		local character = LocalPlayer.Character
-		if character and character:FindFirstChild("HumanoidRootPart") then
-			local destino = target.Position
-			character.HumanoidRootPart.CFrame = CFrame.new(destino + Vector3.new(0, 3, 0))
-			criarEsfera(destino)
-		end
-	end
-end
-
-AddToggle(Teleportes, {
-	Name = "Click tp",
-	Default = false,
-	Callback = function(Value)
-		clickTPAtivado = Value
-		AtualizarGUI(Value)
-
-		if Value then
-			if not mouseConnection then
-				mouseConnection = Mouse.Button1Down:Connect(onClick)
-			end
-		else
-			if mouseConnection then
-				mouseConnection:Disconnect()
-				mouseConnection = nil
-			end
-		end
-	end
+-- Botão: Salvar posição
+AddButton(Teleportes, {
+    Name = "Salvar posição",
+    Callback = function()
+        print("Botão foi clicado! Salvando posição...")
+        pcall(function()
+            local hrp = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+            savedCFrame = hrp.CFrame
+            print("Posição salva:", tostring(savedCFrame))
+        end)
+    end
 })
+
+-- Botão: Teleportar para posição salva
+AddButton(Teleportar, {
+    Name = "Teleportar para posição",
+    Callback = function()
+        print("Botão foi clicado! Teleportando...")
+        pcall(function()
+            if savedCFrame then
+                local hrp = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+                hrp.CFrame = savedCFrame
+                print("Teleportado com sucesso.")
+            else
+                warn("Nenhuma posição salva ainda!")
+            end
+        end)
+    end
+})
+
+
 
 -- Serviços
 local Players = game:GetService("Players")
@@ -1095,28 +1042,88 @@ AddToggle(Config, {
     end
 })
 
-local Lighting = game:GetService("Lighting")
-local nevoaAtiva = false
+local Lighting = game:GetService("Lighting")  
 
-local function atualizarNevoa()
-    if nevoaAtiva then
-        Lighting.FogStart = 999999
-        Lighting.FogEnd = 1000000
-        Lighting.FogColor = Color3.fromRGB(255, 255, 255)
-    else
-        Lighting.FogStart = 0
-        Lighting.FogEnd = 200
-        Lighting.FogColor = Color3.fromRGB(200, 200, 200)
-    end
+-- Armazena configurações originais
+local originalSettings = {
+	Brightness = Lighting.Brightness,
+	Ambient = Lighting.Ambient,
+	OutdoorAmbient = Lighting.OutdoorAmbient,
+	ClockTime = Lighting.ClockTime,
+	FogEnd = Lighting.FogEnd,
+	GlobalShadows = Lighting.GlobalShadows
+}
+
+local fullBrightEnabled = false
+local connections = {}
+
+-- Ativa o modo manhã com iluminação suave
+local function enableMorningLight()
+	fullBrightEnabled = true
+
+	Lighting.Brightness = 1.5
+	Lighting.Ambient = Color3.fromRGB(180, 180, 160) 
+	Lighting.OutdoorAmbient = Color3.fromRGB(200, 200, 170)
+	Lighting.ClockTime = 7 -- manhã cedo
+	Lighting.FogEnd = 1e9
+	Lighting.GlobalShadows = true
+
+	-- Protege propriedades de alterações externas
+	table.insert(connections, Lighting:GetPropertyChangedSignal("ClockTime"):Connect(function()
+		if fullBrightEnabled then Lighting.ClockTime = 7 end
+	end))
+
+	table.insert(connections, Lighting:GetPropertyChangedSignal("Ambient"):Connect(function()
+		if fullBrightEnabled then Lighting.Ambient = Color3.fromRGB(180, 180, 160) end
+	end))
+
+	table.insert(connections, Lighting:GetPropertyChangedSignal("OutdoorAmbient"):Connect(function()
+		if fullBrightEnabled then Lighting.OutdoorAmbient = Color3.fromRGB(200, 200, 170) end
+	end))
+
+	table.insert(connections, Lighting:GetPropertyChangedSignal("Brightness"):Connect(function()
+		if fullBrightEnabled then Lighting.Brightness = 1.5 end
+	end))
+
+	table.insert(connections, Lighting:GetPropertyChangedSignal("GlobalShadows"):Connect(function()
+		if fullBrightEnabled then Lighting.GlobalShadows = true end
+	end))
+
+	table.insert(connections, Lighting:GetPropertyChangedSignal("FogEnd"):Connect(function()
+		if fullBrightEnabled then Lighting.FogEnd = 1e9 end
+	end))
+
+	print("Lighting ativado.")
 end
 
+-- Restaura os valores originais
+local function disableMorningLight()
+	fullBrightEnabled = false
+
+	for _, conn in ipairs(connections) do
+		if conn.Disconnect then
+			conn:Disconnect()
+		end
+	end
+	connections = {}
+
+	for prop, value in pairs(originalSettings) do
+		Lighting[prop] = value
+	end
+
+	print("Lighting desativardo.")
+end
+
+-- Toggle
 AddToggle(Config, {
-    Name = "Remover Névoa",
-    Default = true,
-    Callback = function(Value)
-        nevoaAtiva = Value
-        atualizarNevoa()
-    end
+	Name = "Força Dia",
+	Default = false,
+	Callback = function(state) 
+		if state then 
+			enableMorningLight()
+		else
+			disableMorningLight()
+		end
+	end
 })
 
-atualizarNevoa()
