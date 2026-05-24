@@ -57,7 +57,6 @@ MinimizeButton({
 local Jogador = MakeTab({Name = "Jogador"})
 local Visuais = MakeTab({Name = "Visuals"})
 local Teleportes = MakeTab({Name = "Teleportes"})
-local Auxílios = MakeTab({Name = "Auxílios"})
 local Config = MakeTab({Name = "Config"})
 
 
@@ -804,7 +803,7 @@ local function getClosestPlayerToFOV()
 end
 
 -- Toggle do Aimbot
-AddToggle(Auxílios, {
+AddToggle(Config, {
     Name = "Aimbot",
     Default = false,
     Callback = function(Value)
@@ -830,7 +829,7 @@ AddToggle(Auxílios, {
 })
 
 -- Slider para controlar o tamanho do FOV
-AddSlider(Auxílios, {
+AddSlider(Config, {
     Name = "Tamanho do FOV",
     MinValue = 19,
     MaxValue = 190,
