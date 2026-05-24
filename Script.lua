@@ -57,7 +57,6 @@ MinimizeButton({
 local Jogador = MakeTab({Name = "Jogador"})
 local Visuais = MakeTab({Name = "Visuals"})
 local Teleportes = MakeTab({Name = "Teleportes"})
-local Auxílios = MakeTab({Name = "Auxílios"})
 local Config = MakeTab({Name = "Config"})
 
 
@@ -396,13 +395,6 @@ AddButton(Jogador, {
 local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
-
-
-
-
-
-
-			
 
 
 
