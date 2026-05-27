@@ -1133,3 +1133,4 @@ AddSlider(Config, {
         FOVCircle.Radius = FOVRadius
     end
 })
+
