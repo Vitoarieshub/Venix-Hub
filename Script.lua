@@ -918,6 +918,7 @@ AddToggle(Config, {
     end
 })
 
+
 local Workspace = game:GetService("Workspace")
 local storedTransparency = {}
 
