@@ -902,9 +902,69 @@ AddToggle(Config, {
 	end
 })
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+local trackedPlayers = {}
+local antiFlingEnabled = false
+
+local function setCollide(part, state)
+    if part:IsA("BasePart") then
+        part.CanCollide = state
+    end
+end
+
+local function trackCharacter(character)
+    for _, part in pairs(character:GetChildren()) do
+        setCollide(part, not antiFlingEnabled)
+    end
+    character.ChildAdded:Connect(function(child)
+        setCollide(child, not antiFlingEnabled)
+    end)
+end
+
+local function trackPlayer(player)
+    if player == localPlayer then return end
+    if player.Character then
+        trackCharacter(player.Character)
+    end
+    player.CharacterAdded:Connect(trackCharacter)
+    trackedPlayers[player] = true
+end
+
+local function applyState(state)
+    for player in pairs(trackedPlayers) do
+        local character = player.Character
+        if character then
+            for _, part in pairs(character:GetChildren()) do
+                setCollide(part, state)
+            end
+        end
+    end
+end
+
+local function enableTracking()
+    for _, player in pairs(Players:GetPlayers()) do
+        trackPlayer(player)
+    end
+    Players.PlayerAdded:Connect(trackPlayer)
+    RunService.RenderStepped:Connect(function()
+        if antiFlingEnabled then
+            for player in pairs(trackedPlayers) do
+                local character = player.Character
+                if character then
+                    for _, part in pairs(character:GetChildren()) do
+                        setCollide(part, false)
+                    end
+                end
+            end
+        end
+    end)
+end
 
 AddToggle(Config, {
-    Name = "Anti Arremesso",
+    Name = "Anti Fling",
     Default = false,
     Callback = function(state)
         antiFlingEnabled = state
