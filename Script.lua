@@ -701,6 +701,103 @@ AddColorPicker(Visuais, {
 	end
 })
 
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local linhas = {}
+local espConnections = {}
+local espLinhaAtivado = false
+local corVermelha = Color3.fromRGB(255, 0, 0)
+
+local function criarLinha(player)
+    if player == LocalPlayer then return end
+
+    if linhas[player] then
+        linhas[player]:Remove()
+        linhas[player] = nil
+    end
+    if espConnections[player] then
+        espConnections[player]:Disconnect()
+        espConnections[player] = nil
+    end
+
+    local linha = Drawing.new("Line")
+    linha.Thickness = 2
+    linha.Transparency = 1
+    linha.Visible = false
+    linha.Color = corVermelha
+    linhas[player] = linha
+
+    espConnections[player] = RunService.RenderStepped:Connect(function()
+        if not espLinhaAtivado then
+            linha.Visible = false
+            return
+        end
+
+        local char = player.Character
+        local head = char and char:FindFirstChild("Head")
+        if not head then
+            linha.Visible = false
+            return
+        end
+
+        local cam = workspace.CurrentCamera
+        local screenSize = cam.ViewportSize
+        local headPos, onScreen = cam:WorldToViewportPoint(head.Position)
+
+        if onScreen then
+            linha.From = Vector2.new(screenSize.X / 2, 0)
+            linha.To = Vector2.new(headPos.X, headPos.Y)
+            linha.Visible = true
+        else
+            linha.Visible = false
+        end
+    end)
+
+    player.CharacterAdded:Connect(function()
+        wait(1)
+        if espLinhaAtivado then
+            criarLinha(player)
+        end
+    end)
+end
+
+function ativarESP()
+    for _, p in ipairs(Players:GetPlayers()) do
+        criarLinha(p)
+    end
+    espConnections["PlayerAdded"] = Players.PlayerAdded:Connect(function(p)
+        wait(1)
+        criarLinha(p)
+    end)
+end
+
+function desativarESP()
+    for _, linha in pairs(linhas) do
+        if linha then linha:Remove() end
+    end
+    linhas = {}
+    for _, conn in pairs(espConnections) do
+        if conn then conn:Disconnect() end
+    end
+    espConnections = {}
+end
+
+AddToggle(Visuais, {
+    Name = "ESP Line",
+    Default = false,
+    Callback = function(Value)
+        espLinhaAtivado = Value
+        if espLinhaAtivado then
+            ativarESP()
+        else
+            desativarESP()
+        end
+    end
+})
+
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -804,6 +901,7 @@ AddToggle(Servidor, {
 		end
 	end
 })
+
 
 
 local Players = game:GetService("Players")
