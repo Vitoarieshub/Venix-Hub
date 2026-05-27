@@ -865,7 +865,7 @@ local function watchNewSeats()
 end
 
 -- Toggle Anti Sit
-AddToggle(Servidor, {
+AddToggle(Config, {
 	Name = "Anti Sit",
 	Default = false,
 	Callback = function(Value)
