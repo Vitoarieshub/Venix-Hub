@@ -701,6 +701,81 @@ AddColorPicker(Visuais, {
 	end
 })
 
+local espAtivado = false
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local function aplicarHighlight(player)
+    if player == LocalPlayer then return end
+
+    local character = player.Character
+    if not character then return end
+
+    local highlight = character:FindFirstChild("ESPHighlight")
+
+    if not highlight then
+        highlight = Instance.new("Highlight")
+        highlight.Name = "ESPHighlight"
+        highlight.FillTransparency = 1
+        highlight.OutlineTransparency = 0
+        highlight.Adornee = character
+        highlight.Parent = character
+    end
+
+    -- Verifica time
+    if LocalPlayer.Team and player.Team then
+        if LocalPlayer.Team == player.Team then
+            highlight.OutlineColor = Color3.fromRGB(0, 255, 0) -- Amigo
+        else
+            highlight.OutlineColor = Color3.fromRGB(255, 0, 0) -- Inimigo
+        end
+    else
+        -- Caso o jogo não tenha Teams
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    end
+end
+
+local function removerHighlight(player)
+    local character = player.Character
+    if character then
+        local highlight = character:FindFirstChild("ESPHighlight")
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if espAtivado then
+        for _, player in ipairs(Players:GetPlayers()) do
+            aplicarHighlight(player)
+        end
+    else
+        for _, player in ipairs(Players:GetPlayers()) do
+            removerHighlight(player)
+        end
+    end
+end)
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        if espAtivado then
+            aplicarHighlight(player)
+        end
+    end)
+end)
+
+AddToggle(Visuais, {
+    Name = "ESP Box",
+    Default = false,
+    Callback = function(Value)
+        espAtivado = Value
+    end
+})
+
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
