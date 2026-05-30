@@ -7,7 +7,7 @@ MakeWindow({
 
         Title = "Venix Hub",
 
-        Animation = "Venix Universal"
+        Animation = "Venix Hub Universal"
 
     },
 
@@ -57,6 +57,7 @@ MinimizeButton({
 local Jogador = MakeTab({Name = "Jogador"})
 local Visuais = MakeTab({Name = "Visuals"})
 local Teleportes = MakeTab({Name = "Teleportes"})
+local Combate = MakeTab({Name = "Combate"})
 local Config = MakeTab({Name = "Config"})
 
 
@@ -1232,7 +1233,7 @@ local function getClosestPlayerToFOV()
 end
 
 -- Toggle do Aimbot
-AddToggle(Config, {
+AddToggle(Combate, {
     Name = "Aimbot",
     Default = false,
     Callback = function(Value)
@@ -1258,7 +1259,7 @@ AddToggle(Config, {
 })
 
 -- Slider para controlar o tamanho do FOV
-AddSlider(Config, {
+AddSlider(Combate, {
     Name = "Tamanho do FOV",
     MinValue = 20,
     MaxValue = 100,
