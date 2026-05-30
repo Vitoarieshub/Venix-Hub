@@ -1186,7 +1186,7 @@ local ChangeMode = false
 
 -- Desenha o círculo de FOV
 local FOVCircle = Drawing.new("Circle")
-FOVCircle.Color = Color3.fromRGB(255, 0, 0)
+FOVCircle.Color = Color3.fromRGB(255, 255, 255)
 FOVCircle.Thickness = 2
 FOVCircle.Filled = false
 FOVCircle.Visible = false
