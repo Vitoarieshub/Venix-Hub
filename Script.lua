@@ -1260,8 +1260,8 @@ AddToggle(Config, {
 -- Slider para controlar o tamanho do FOV
 AddSlider(Config, {
     Name = "Tamanho do FOV",
-    MinValue = 19,
-    MaxValue = 190,
+    MinValue = 20,
+    MaxValue = 100,
     Default = FOVRadius,
     Increase = 1,
     Callback = function(Value)
