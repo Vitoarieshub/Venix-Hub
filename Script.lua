@@ -378,6 +378,7 @@ AddButton(Jogador, {
 })
 
 
+
 local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
@@ -506,6 +507,7 @@ AddButton(Teleportes, {
         end)
     end
 })
+
 
 
 local Players = game:GetService("Players")
@@ -686,6 +688,7 @@ AddColorPicker(Visuais, {
 		espCor = Value
 	end
 })
+
 
 local espAtivado = false
 
