@@ -216,7 +216,7 @@ function toggleNoclip(enable)
 end
 
 -- Toggle para ativar/desativar colisão
-AddToggle(Main, {
+AddToggle(Jogador, {
     Name = "Disable Collisions", 
     Default = false,
     Callback = function(Value)
