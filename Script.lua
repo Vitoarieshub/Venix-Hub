@@ -188,56 +188,41 @@ AddToggle(Jogador, {
 })
 
 
-local Players = game:GetService("Players")
+-- Noclip
+local noclipConnection
 
-local RunService = game:GetService("RunService")
-
-local player = Players.LocalPlayer
-
-local noclipEnabled = false
-
-
-
--- Toggle para ativar/desativar Atravessar Paredes
-
-AddToggle(Jogador, {
-
-    Name = "Atravessar Paredes", 
-
-    Default = false,
-
-    Callback = function(Value)
-
-        noclipEnabled = Value
-
-        print("Noclip:", Value and "Ativado" or "Desativado")
-
-    end
-
-})
-
-
-
--- Loop para desativar colisão 
-
-RunService.Stepped:Connect(function()
-
-    if noclipEnabled and player.Character then
-
-        for _, part in ipairs(player.Character:GetDescendants()) do
-
-            if part:IsA("BasePart") then
-
-                part.CanCollide = false
-
-            end
-
+function toggleNoclip(enable)
+    if enable then
+        if not noclipConnection then
+            noclipConnection = game:GetService("RunService").Stepped:Connect(function()
+                for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end)
         end
-
+    else
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
     end
+end
 
-end)
-
+-- Toggle para ativar/desativar colisão
+AddToggle(Main, {
+    Name = "Disable Collisions", 
+    Default = false,
+    Callback = function(Value)
+        toggleNoclip(Value)
+    end
+})
 
 
 -- Infinite Jump
