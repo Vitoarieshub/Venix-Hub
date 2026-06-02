@@ -665,7 +665,6 @@ AddToggle(Visuais, {
 	end
 })
 
-
 -- BOTÃO: ESP Distância
 AddToggle(Visuais, {
 	Name = "ESP Distance",
@@ -691,7 +690,6 @@ AddColorPicker(Visuais, {
 
 
 local espAtivado = false
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
@@ -965,6 +963,7 @@ AddToggle(Config, {
 		end
 	end
 })
+
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -1269,17 +1268,10 @@ local Camera = workspace.CurrentCamera
 
 --// SETTINGS
 local AimAssistEnabled = false
-local WallCheckEnabled = false
+local FOV_RADIUS = 80
+local SMOOTHNESS = 0.12
 
-local AIM_RADIUS = 80
-local SMOOTHNESS = 0.2 -- quanto menor, mais suave
-
---// RAYCAST (Wall Check)
-local rayParams = RaycastParams.new()
-rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-rayParams.IgnoreWater = true
-
---// TOGGLES (Seu Hub)
+--// TOGGLE (SEU HUB)
 AddToggle(Combate, {
     Name = "Aim Assist",
     Default = false,
@@ -1288,47 +1280,17 @@ AddToggle(Combate, {
     end
 })
 
-AddToggle(Combate, {
-    Name = "Wall Check",
-    Default = false,
-    Callback = function(Value)
-        WallCheckEnabled = Value
-    end
-})
-
---// LINE OF SIGHT
-local function HasLineOfSight(originPart, targetPart)
-    if not WallCheckEnabled then
-        return true
-    end
-
-    local character = LocalPlayer.Character
-    if not character then return false end
-
-    rayParams.FilterDescendantsInstances = { character }
-
-    local direction = targetPart.Position - originPart.Position
-
-    local result = workspace:Raycast(
-        originPart.Position,
-        direction,
-        rayParams
-    )
-
-    return result == nil
-end
-
---// GET CLOSEST TARGET
+--// GET TARGET DENTRO DO FOV
 local function GetClosestTarget()
     local closest = nil
-    local shortest = AIM_RADIUS
+    local shortest = FOV_RADIUS
 
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
             local head = player.Character:FindFirstChild("Head")
 
-            if head and HasLineOfSight(Camera.CFrame.Position, head.Position) then
-                local screenPoint, onScreen = Camera:WorldToViewportPoint(head.Position)
+            if head then
+                local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
 
                 if onScreen then
                     local center = Vector2.new(
@@ -1336,7 +1298,7 @@ local function GetClosestTarget()
                         Camera.ViewportSize.Y / 2
                     )
 
-                    local dist = (Vector2.new(screenPoint.X, screenPoint.Y) - center).Magnitude
+                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
 
                     if dist < shortest then
                         shortest = dist
