@@ -379,6 +379,31 @@ AddButton(Jogador, {
 
 
 
+AddToggle(Player, {
+	Name = "Click tp",
+	Default = false,
+	Callback = function(Value)
+		clickTPAtivado = Value
+
+		local bola = workspace:FindFirstChild("Bola")
+		if bola and bola:IsA("BasePart") then
+			bola.Color = Color3.fromRGB(10, 10, 10)
+		end
+
+		if Value then
+			if not mouseConnection then
+				mouseConnection = Mouse.Button1Down:Connect(onClick)
+			end
+		else
+			if mouseConnection then
+				mouseConnection:Disconnect()
+				mouseConnection = nil
+			end
+		end
+	end
+})
+
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -506,104 +531,78 @@ AddButton(Teleportes, {
 
 
 
+local espAtivado = false
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
-local espNomeAtivado = false
-local espDistanciaAtivado = false
-local espCor = Color3.fromRGB(255, 255, 255)
+local function aplicarHighlight(player)
+    if player == LocalPlayer then return end
 
-local function criarESP(root)
-	local gui = root:FindFirstChild("ESP_INFO")
+    local character = player.Character
+    if not character then return end
 
-	if not gui then
-		gui = Instance.new("BillboardGui")
-		gui.Name = "ESP_INFO"
-		gui.Adornee = root
-		gui.Size = UDim2.new(0, 220, 0, 20)
-		gui.StudsOffset = Vector3.new(0, -3, 0)
-		gui.AlwaysOnTop = true
-		gui.LightInfluence = 0
-		gui.Parent = root
+    local highlight = character:FindFirstChild("ESPHighlight")
 
-		local texto = Instance.new("TextLabel")
-		texto.Name = "Texto"
-		texto.Size = UDim2.new(1, 0, 1, 0)
-		texto.BackgroundTransparency = 1
-		texto.Font = Enum.Font.GothamBold
-		texto.TextSize = 14
-		texto.TextStrokeTransparency = 0.4
-		texto.TextStrokeColor3 = Color3.new(0, 0, 0)
-		texto.TextColor3 = espCor
-		texto.Parent = gui
-	end
+    if not highlight then
+        highlight = Instance.new("Highlight")
+        highlight.Name = "ESPHighlight"
+        highlight.FillTransparency = 1
+        highlight.OutlineTransparency = 0
+        highlight.Adornee = character
+        highlight.Parent = character
+    end
 
-	return gui
+    -- Verifica time
+    if LocalPlayer.Team and player.Team then
+        if LocalPlayer.Team == player.Team then
+            highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+        else
+            highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+        end
+    else
+        -- Caso o jogo não tenha Teams
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    end
 end
 
-task.spawn(function()
-	while task.wait(0.15) do
-		for _, player in ipairs(Players:GetPlayers()) do
-			if player ~= LocalPlayer then
-				local char = player.Character
-				local myChar = LocalPlayer.Character
+local function removerHighlight(player)
+    local character = player.Character
+    if character then
+        local highlight = character:FindFirstChild("ESPHighlight")
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+end
 
-				if char and myChar then
-					local root = char:FindFirstChild("HumanoidRootPart")
-					local myRoot = myChar:FindFirstChild("HumanoidRootPart")
-					local humanoid = char:FindFirstChildOfClass("Humanoid")
+RunService.RenderStepped:Connect(function()
+    if espAtivado then
+        for _, player in ipairs(Players:GetPlayers()) do
+            aplicarHighlight(player)
+        end
+    else
+        for _, player in ipairs(Players:GetPlayers()) do
+            removerHighlight(player)
+        end
+    end
+end)
 
-					if root and myRoot and humanoid and humanoid.Health > 0 then
-						local gui = criarESP(root)
-						local texto = gui:FindFirstChild("Texto")
-
-						local dist = math.floor((myRoot.Position - root.Position).Magnitude)
-
-						local info = {}
-
-						if espNomeAtivado then
-							table.insert(info, player.Name)
-						end
-
-						if espDistanciaAtivado then
-							table.insert(info, dist .. "m")
-						end
-
-						gui.Enabled = (#info > 0)
-
-						if #info > 0 then
-							texto.Text = table.concat(info, " ")
-							texto.TextColor3 = espCor
-						end
-					end
-				end
-			end
-		end
-	end
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        if espAtivado then
+            aplicarHighlight(player)
+        end
+    end)
 end)
 
 AddToggle(Visuais, {
-	Name = "ESP Nome",
-	Default = false,
-	Callback = function(Value)
-		espNomeAtivado = Value
-	end
-})
-
-AddToggle(Visuais, {
-	Name = "ESP Distância",
-	Default = false,
-	Callback = function(Value)
-		espDistanciaAtivado = Value
-	end
-})
-
-AddColorPicker(Visuais, {
-	Name = "Cor ESP",
-	Default = espCor,
-	Callback = function(Value)
-		espCor = Value
-	end
+    Name = "ESP Box",
+    Default = false,
+    Callback = function(Value)
+        espAtivado = Value
+    end
 })
 
 
