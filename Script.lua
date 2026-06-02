@@ -915,6 +915,42 @@ AddToggle(Config, {
 })
 
 
+AddButton(Config, {
+    Name = "FPS Boost",
+    Callback = function()
+        print("Botão foi clicado!")
+
+        pcall(function()
+            -- Otimiza todas as partes para reduzir o impacto gráfico
+            for _, v in ipairs(workspace:GetDescendants()) do
+                if v:IsA("Part") or v:IsA("MeshPart") or v:IsA("UnionOperation") then
+                    v.Material = Enum.Material.SmoothPlastic -- Remove texturas complexas
+                    v.Reflectance = 0 -- Remove reflexos
+                    v.CastShadow = false -- Desativa sombras
+                elseif v:IsA("Decal") or v:IsA("Texture") then
+                    v.Transparency = 1 -- Oculta texturas e decals
+                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Explosion") then
+                    v:Destroy() -- Remove efeitos que consomem desempenho
+                end
+            end
+
+            -- Ajusta configurações para melhorar o FPS
+            pcall(function()
+                settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 -- Reduz qualidade gráfica
+                workspace.GlobalShadows = false -- Remove sombras globais
+
+                if game:FindFirstChild("Lighting") then
+                    local lighting = game.Lighting
+                    lighting.FogEnd = 1e10 -- Remove neblina
+                    lighting.GlobalShadows = false
+                    lighting.Brightness = 2
+                end
+            end)
+        end)
+    end
+})
+
+
 local Lighting = game:GetService("Lighting")  
 
 -- Armazena configurações originais
