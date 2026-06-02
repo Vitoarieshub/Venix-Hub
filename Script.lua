@@ -501,10 +501,11 @@ AddButton(Teleportes, {
                 warn("Nenhuma posição salva ainda!")
             end
         end)
-    end
+	end
 })
 
-============== Esp ==============
+
+
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
