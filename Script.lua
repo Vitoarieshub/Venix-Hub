@@ -1204,3 +1204,37 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local RecoilEnabled = true
+
+AddToggle(Combate, {
+    Name = "Recoil",
+    Default = true,
+    Callback = function(Value)
+        RecoilEnabled = Value
+    end
+})
+
+local function ApplyRecoil()
+    if not RecoilEnabled then
+        return
+    end
+
+    Camera.CFrame *= CFrame.Angles(
+        math.rad(-2),
+        math.rad(math.random(-1, 1)),
+        0
+    )
+end
+
+local function Shoot()
+    -- Lógica do disparo
+
+    ApplyRecoil()
+end
+
