@@ -1230,7 +1230,7 @@ AddToggle(Combate, {
 AddSlider(Combate, {
     Name = "Tamanho do FOV",
     MinValue = 20,
-    MaxValue = 100,
+    MaxValue = 110,
     Default = FOVRadius,
     Increase = 1,
     Callback = function(Value)
@@ -1238,106 +1238,3 @@ AddSlider(Combate, {
         FOVCircle.Radius = FOVRadius
     end
 })
-
-
---// SERVICES
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
---// SETTINGS
-local AimAssistEnabled = false
-local FOV_RADIUS = 80
-local SMOOTHNESS = 0.12
-
---// TOGGLE (SEU HUB)
-AddToggle(Combate, {
-    Name = "Aim Assist",
-    Default = false,
-    Callback = function(Value)
-        AimAssistEnabled = Value
-    end
-})
-
---// GET TARGET DENTRO DO FOV
-local function GetClosestTarget()
-    local closest = nil
-    local shortest = FOV_RADIUS
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local head = player.Character:FindFirstChild("Head")
-
-            if head then
-                local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
-
-                if onScreen then
-                    local center = Vector2.new(
-                        Camera.ViewportSize.X / 2,
-                        Camera.ViewportSize.Y / 2
-                    )
-
-                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
-
-                    if dist < shortest then
-                        shortest = dist
-                        closest = head
-                    end
-                end
-            end
-        end
-    end
-
-    return closest
-end
-
---// AIM LOOP
-RunService.RenderStepped:Connect(function()
-    if not AimAssistEnabled then return end
-
-    local target = GetClosestTarget()
-
-    if target then
-        local current = Camera.CFrame
-        local goal = CFrame.new(current.Position, target.Position)
-
-        Camera.CFrame = current:Lerp(goal, SMOOTHNESS)
-    end
-end)
-
-
-local Players = game:GetService("Players")
-
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local RecoilEnabled = true
-
-AddToggle(Combate, {
-    Name = "Recoil",
-    Default = true,
-    Callback = function(Value)
-        RecoilEnabled = Value
-    end
-})
-
-local function ApplyRecoil()
-    if not RecoilEnabled then
-        return
-    end
-
-    Camera.CFrame *= CFrame.Angles(
-        math.rad(-2),
-        math.rad(math.random(-1, 1)),
-        0
-    )
-end
-
-local function Shoot()
-    -- Lógica do disparo
-
-    ApplyRecoil()
-end
-
