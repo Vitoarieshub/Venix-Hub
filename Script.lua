@@ -379,7 +379,7 @@ AddButton(Jogador, {
 
 
 
-AddToggle(Player, {
+AddToggle(Teleportes, {
 	Name = "Click tp",
 	Default = false,
 	Callback = function(Value)
@@ -600,7 +600,7 @@ local function MonitorPlayer(Player)
     end
 end
 
-AddToggle(All, {
+AddToggle(Visuais, {
     Name = "ESP Name",
     Default = false,
     Callback = function(Value)
