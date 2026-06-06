@@ -531,6 +531,109 @@ AddButton(Teleportes, {
 
 
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local ESPEnabled = false
+local Connections = {}
+
+local function CreateESP(Player)
+    if Player == LocalPlayer then return end
+
+    task.spawn(function()
+        while ESPEnabled and Player and Player.Character do
+            local Head = Player.Character:FindFirstChild("Head")
+            local Humanoid = Player.Character:FindFirstChild("Humanoid")
+
+            if Head and Humanoid and Humanoid.Health > 0 then
+                local ESP = Head:FindFirstChild("ESP_Name")
+
+                if not ESP then
+                    ESP = Instance.new("BillboardGui")
+                    ESP.Name = "ESP_Name"
+                    ESP.Adornee = Head
+                    ESP.Size = UDim2.new(0, 100, 0, 20)
+                    ESP.StudsOffset = Vector3.new(0, 2, 0)
+                    ESP.AlwaysOnTop = true
+
+                    local Text = Instance.new("TextLabel")
+                    Text.Size = UDim2.new(1, 0, 1, 0)
+                    Text.BackgroundTransparency = 1
+                    Text.TextColor3 = Color3.new(1,1,1)
+                    Text.TextStrokeTransparency = 0.4
+                    Text.Font = Enum.Font.GothamBold
+                    Text.TextSize = 12
+                    Text.Parent = ESP
+
+                    ESP.Parent = Head
+                end
+
+                ESP.TextLabel.Text = Player.Name
+            end
+
+            task.wait(0.3)
+        end
+
+        if Player.Character and Player.Character:FindFirstChild("Head") then
+            local ESP = Player.Character.Head:FindFirstChild("ESP_Name")
+            if ESP then
+                ESP:Destroy()
+            end
+        end
+    end)
+end
+
+local function MonitorPlayer(Player)
+    if Connections[Player] then
+        Connections[Player]:Disconnect()
+    end
+
+    Connections[Player] = Player.CharacterAdded:Connect(function()
+        task.wait(1)
+        if ESPEnabled then
+            CreateESP(Player)
+        end
+    end)
+
+    if Player.Character then
+        CreateESP(Player)
+    end
+end
+
+AddToggle(All, {
+    Name = "ESP Name",
+    Default = false,
+    Callback = function(Value)
+        ESPEnabled = Value
+
+        if Value then
+            for _, Player in ipairs(Players:GetPlayers()) do
+                MonitorPlayer(Player)
+            end
+
+            Connections.PlayerAdded = Players.PlayerAdded:Connect(MonitorPlayer)
+        else
+            for _, Player in ipairs(Players:GetPlayers()) do
+                if Player.Character and Player.Character:FindFirstChild("Head") then
+                    local ESP = Player.Character.Head:FindFirstChild("ESP_Name")
+                    if ESP then
+                        ESP:Destroy()
+                    end
+                end
+            end
+
+            for _, Connection in pairs(Connections) do
+                if typeof(Connection) == "RBXScriptConnection" then
+                    Connection:Disconnect()
+                end
+            end
+
+            table.clear(Connections)
+        end
+    end
+})
+
+
 local espAtivado = false
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
