@@ -378,17 +378,56 @@ AddButton(Jogador, {
 })
 
 
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+
+local clickTPAtivado = false
+local marcador = nil
+local mouseConnection = nil
+
+-- Cria a esfera
+local function criarEsfera(pos)
+	if marcador then marcador:Destroy() end
+
+	marcador = Instance.new("Part")
+	marcador.Shape = Enum.PartType.Ball
+	marcador.Color = Color3.new(10, 10, 10)
+	marcador.Size = Vector3.new(1.5, 1.5, 1.5)
+	marcador.Anchored = true
+	marcador.CanCollide = false
+	marcador.Material = Enum.Material.Neon
+	marcador.Position = pos + Vector3.new(0, 0.75, 0)
+	marcador.Parent = workspace
+
+	task.delay(3, function()
+		if marcador then marcador:Destroy() end
+	end)
+end
+
+-- Ao clicar no chão
+local function onClick()
+	if not clickTPAtivado then return end
+
+	local target = Mouse.Hit
+	if target then
+		local character = LocalPlayer.Character
+		if character and character:FindFirstChild("HumanoidRootPart") then
+			local destino = target.Position
+			character.HumanoidRootPart.CFrame = CFrame.new(destino + Vector3.new(0, 3, 0))
+			criarEsfera(destino)
+		end
+	end
+end
+
+-- Toggle para ativar/desativar o Click TP
 AddToggle(Teleportes, {
 	Name = "Click tp",
 	Default = false,
 	Callback = function(Value)
 		clickTPAtivado = Value
-
-		local bola = workspace:FindFirstChild("Bola")
-		if bola and bola:IsA("BasePart") then
-			bola.Color = Color3.fromRGB(10, 10, 10)
-		end
 
 		if Value then
 			if not mouseConnection then
@@ -402,7 +441,6 @@ AddToggle(Teleportes, {
 		end
 	end
 })
-
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
