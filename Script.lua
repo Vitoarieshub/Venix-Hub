@@ -672,6 +672,7 @@ AddToggle(Visuais, {
 })
 
 
+
 local espAtivado = false
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -745,6 +746,7 @@ AddToggle(Visuais, {
         espAtivado = Value
     end
 })
+
 
 
 local Players = game:GetService("Players")
