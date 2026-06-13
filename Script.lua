@@ -577,103 +577,160 @@ AddButton(Teleportes, {
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local ESPEnabled = false
-local Connections = {}
+local espNomeAtivado = false
+local espDistAtivado = false
 
-local function CreateESP(Player)
-    if Player == LocalPlayer then return end
+local connections = {}
 
-    task.spawn(function()
-        while ESPEnabled and Player and Player.Character do
-            local Head = Player.Character:FindFirstChild("Head")
-            local Humanoid = Player.Character:FindFirstChild("Humanoid")
+local function criarBillboard(nome, adornee, offsetY)
+	local gui = Instance.new("BillboardGui")
+	gui.Name = nome
+	gui.Adornee = adornee
+	gui.Size = UDim2.new(0, 120, 0, 20)
+	gui.StudsOffset = Vector3.new(0, offsetY, 0)
+	gui.AlwaysOnTop = true
 
-            if Head and Humanoid and Humanoid.Health > 0 then
-                local ESP = Head:FindFirstChild("ESP_Name")
+	local texto = Instance.new("TextLabel")
+	texto.Name = "Texto"
+	texto.Size = UDim2.new(1, 0, 1, 0)
+	texto.BackgroundTransparency = 1
+	texto.TextColor3 = Color3.new(1, 1, 1)
+	texto.TextStrokeTransparency = 0
+	texto.TextStrokeColor3 = Color3.new(0, 0, 0)
+	texto.Font = Enum.Font.Gotham
+	texto.TextSize = 12
+	texto.Parent = gui
 
-                if not ESP then
-                    ESP = Instance.new("BillboardGui")
-                    ESP.Name = "ESP_Name"
-                    ESP.Adornee = Head
-                    ESP.Size = UDim2.new(0, 100, 0, 20)
-                    ESP.StudsOffset = Vector3.new(0, 2, 0)
-                    ESP.AlwaysOnTop = true
+	gui.Parent = adornee
 
-                    local Text = Instance.new("TextLabel")
-                    Text.Size = UDim2.new(1, 0, 1, 0)
-                    Text.BackgroundTransparency = 1
-                    Text.TextColor3 = Color3.new(1,1,1)
-                    Text.TextStrokeTransparency = 0.4
-                    Text.Font = Enum.Font.GothamBold
-                    Text.TextSize = 12
-                    Text.Parent = ESP
-
-                    ESP.Parent = Head
-                end
-
-                ESP.TextLabel.Text = Player.Name
-            end
-
-            task.wait(0.3)
-        end
-
-        if Player.Character and Player.Character:FindFirstChild("Head") then
-            local ESP = Player.Character.Head:FindFirstChild("ESP_Name")
-            if ESP then
-                ESP:Destroy()
-            end
-        end
-    end)
+	return texto, gui
 end
 
-local function MonitorPlayer(Player)
-    if Connections[Player] then
-        Connections[Player]:Disconnect()
-    end
+local function criarESP(player)
+	if player == LocalPlayer then
+		return
+	end
 
-    Connections[Player] = Player.CharacterAdded:Connect(function()
-        task.wait(1)
-        if ESPEnabled then
-            CreateESP(Player)
-        end
-    end)
+	task.spawn(function()
+		while (espNomeAtivado or espDistAtivado) and player and player.Parent do
+			local char = player.Character
+			local root = char and char:FindFirstChild("HumanoidRootPart")
+			local humanoid = char and char:FindFirstChild("Humanoid")
 
-    if Player.Character then
-        CreateESP(Player)
-    end
+			if root and humanoid and humanoid.Health > 0 then
+
+				if espNomeAtivado and not root:FindFirstChild("ESP_Name") then
+					local texto = criarBillboard("ESP_Name", root, -3)
+					texto.Text = player.Name
+				end
+
+				if espDistAtivado and not root:FindFirstChild("ESP_Distance") then
+					criarBillboard("ESP_Distance", root, -4)
+				end
+
+				local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+				if myRoot then
+					local distancia = math.floor((myRoot.Position - root.Position).Magnitude)
+
+					local guiDist = root:FindFirstChild("ESP_Distance")
+					if guiDist and guiDist:FindFirstChild("Texto") then
+						guiDist.Texto.Text = distancia .. "m"
+					end
+				end
+			end
+
+			task.wait(0.2)
+		end
+	end)
 end
 
-AddToggle(Visuais, {
-    Name = "ESP Name",
-    Default = false,
-    Callback = function(Value)
-        ESPEnabled = Value
+local function limparESPNome()
+	for _, player in ipairs(Players:GetPlayers()) do
+		local char = player.Character
 
-        if Value then
-            for _, Player in ipairs(Players:GetPlayers()) do
-                MonitorPlayer(Player)
-            end
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			local esp = char.HumanoidRootPart:FindFirstChild("ESP_Name")
+			if esp then
+				esp:Destroy()
+			end
+		end
+	end
+end
 
-            Connections.PlayerAdded = Players.PlayerAdded:Connect(MonitorPlayer)
-        else
-            for _, Player in ipairs(Players:GetPlayers()) do
-                if Player.Character and Player.Character:FindFirstChild("Head") then
-                    local ESP = Player.Character.Head:FindFirstChild("ESP_Name")
-                    if ESP then
-                        ESP:Destroy()
-                    end
-                end
-            end
+local function limparESPDistancia()
+	for _, player in ipairs(Players:GetPlayers()) do
+		local char = player.Character
 
-            for _, Connection in pairs(Connections) do
-                if typeof(Connection) == "RBXScriptConnection" then
-                    Connection:Disconnect()
-                end
-            end
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			local esp = char.HumanoidRootPart:FindFirstChild("ESP_Distance")
+			if esp then
+				esp:Destroy()
+			end
+		end
+	end
+end
 
-            table.clear(Connections)
-        end
-    end
+local function monitorarPlayer(player)
+	if player == LocalPlayer then
+		return
+	end
+
+	if connections[player] then
+		connections[player]:Disconnect()
+	end
+
+	connections[player] = player.CharacterAdded:Connect(function()
+		task.wait(1)
+
+		if espNomeAtivado or espDistAtivado then
+			criarESP(player)
+		end
+	end)
+
+	if player.Character then
+		criarESP(player)
+	end
+end
+
+local function atualizarTodos()
+	for _, player in ipairs(Players:GetPlayers()) do
+		monitorarPlayer(player)
+	end
+
+	if not connections.PlayerAdded then
+		connections.PlayerAdded = Players.PlayerAdded:Connect(function(player)
+			monitorarPlayer(player)
+		end)
+	end
+end
+
+AddToggle(Visuais,{
+	Name = "ESP Name",
+	Default = false,
+	Callback = function(Value)
+		espNomeAtivado = Value
+
+		if Value then
+			atualizarTodos()
+		else
+			limparESPNome()
+		end
+	end
+})
+
+AddToggle(Visuais,{
+	Name = "ESP Distance",
+	Default = false,
+	Callback = function(Value)
+		espDistAtivado = Value
+
+		if Value then
+			atualizarTodos()
+		else
+			limparESPDistancia()
+		end
+	end
 })
 
 
