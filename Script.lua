@@ -677,52 +677,53 @@ AddToggle(Visuais, {
 })
 
 
+		
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local ESPEnabled = false
-local Connections = {}
+local espDistAtivado = false
+local connections = {}
 
-local function CreateESP(Player)
-	if Player == LocalPlayer then
+local function criarESP(player)
+	if player == LocalPlayer then
 		return
 	end
 
 	task.spawn(function()
-		while ESPEnabled and Player and Player.Parent do
-			local Character = Player.Character
-			local Root = Character and Character:FindFirstChild("HumanoidRootPart")
-			local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+		while espDistAtivado and player and player.Parent do
+			local character = player.Character
+			local root = character and character:FindFirstChild("HumanoidRootPart")
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 
-			if Root and Humanoid and Humanoid.Health > 0 then
-				local ESP = Root:FindFirstChild("ESP_Distance")
+			if root and humanoid and humanoid.Health > 0 then
+				local esp = root:FindFirstChild("ESP_Distance")
 
-				if not ESP then
-					ESP = Instance.new("BillboardGui")
-					ESP.Name = "ESP_Distance"
-					ESP.Adornee = Root
-					ESP.Size = UDim2.new(0, 60, 0, 16)
-					ESP.StudsOffset = Vector3.new(0, -2, 0)
-					ESP.AlwaysOnTop = true
-					ESP.Parent = Root
+				if not esp then
+					esp = Instance.new("BillboardGui")
+					esp.Name = "ESP_Distance"
+					esp.Adornee = root
+					esp.Size = UDim2.new(0, 60, 0, 16)
+					esp.StudsOffset = Vector3.new(0, -2, 0)
+					esp.AlwaysOnTop = true
+					esp.Parent = root
 
-					local Text = Instance.new("TextLabel")
-					Text.Name = "Text"
-					Text.Size = UDim2.new(1, 0, 1, 0)
-					Text.BackgroundTransparency = 1
-					Text.TextColor3 = Color3.new(1, 1, 1)
-					Text.TextStrokeTransparency = 0
-					Text.Font = Enum.Font.Gotham
-					Text.TextSize = 10
-					Text.Parent = ESP
+					local text = Instance.new("TextLabel")
+					text.Name = "Texto"
+					text.Size = UDim2.new(1, 0, 1, 0)
+					text.BackgroundTransparency = 1
+					text.TextColor3 = Color3.new(1, 1, 1)
+					text.TextStrokeTransparency = 0
+					text.Font = Enum.Font.Gotham
+					text.TextSize = 10
+					text.Parent = esp
 				end
 
-				local MyCharacter = LocalPlayer.Character
-				local MyRoot = MyCharacter and MyCharacter:FindFirstChild("HumanoidRootPart")
+				local myCharacter = LocalPlayer.Character
+				local myRoot = myCharacter and myCharacter:FindFirstChild("HumanoidRootPart")
 
-				if MyRoot then
-					local Distance = math.floor((MyRoot.Position - Root.Position).Magnitude)
-					ESP.Text.Text = Distance .. "m"
+				if myRoot then
+					local distance = math.floor((myRoot.Position - root.Position).Magnitude)
+					esp.Texto.Text = distance .. "m"
 				end
 			end
 
@@ -731,39 +732,21 @@ local function CreateESP(Player)
 	end)
 end
 
-local function RemoveESP()
-	for _, Player in ipairs(Players:GetPlayers()) do
-		local Character = Player.Character
+local function limparESP()
+	for _, player in ipairs(Players:GetPlayers()) do
+		local character = player.Character
 
-		if Character then
-			local Root = Character:FindFirstChild("HumanoidRootPart")
+		if character then
+			local root = character:FindFirstChild("HumanoidRootPart")
 
-			if Root then
-				local ESP = Root:FindFirstChild("ESP_Distance")
+			if root then
+				local esp = root:FindFirstChild("ESP_Distance")
 
-				if ESP then
-					ESP:Destroy()
+				if esp then
+					esp:Destroy()
 				end
 			end
 		end
-	end
-end
-
-local function SetupPlayer(Player)
-	if Connections[Player] then
-		Connections[Player]:Disconnect()
-	end
-
-	Connections[Player] = Player.CharacterAdded:Connect(function()
-		task.wait(1)
-
-		if ESPEnabled then
-			CreateESP(Player)
-		end
-	end)
-
-	if Player.Character then
-		CreateESP(Player)
 	end
 end
 
@@ -771,31 +754,65 @@ AddToggle(Visuais,{
 	Name = "ESP Distance",
 	Default = false,
 	Callback = function(Value)
-		ESPEnabled = Value
+		espDistAtivado = Value
 
 		if Value then
-			for _, Player in ipairs(Players:GetPlayers()) do
-				SetupPlayer(Player)
-			end
 
-			if not Connections.PlayerAdded then
-				Connections.PlayerAdded = Players.PlayerAdded:Connect(function(Player)
-					SetupPlayer(Player)
-				end)
-			end
-		else
-			RemoveESP()
+			for _, player in ipairs(Players:GetPlayers()) do
+				if player ~= LocalPlayer then
 
-			for _, Connection in pairs(Connections) do
-				if typeof(Connection) == "RBXScriptConnection" then
-					Connection:Disconnect()
+					criarESP(player)
+
+					if not connections[player] then
+						connections[player] = player.CharacterAdded:Connect(function()
+							repeat task.wait() until player.Character
+							task.wait(1)
+
+							if espDistAtivado then
+								criarESP(player)
+							end
+						end)
+					end
+
 				end
 			end
 
-			table.clear(Connections)
+			if not connections.PlayerAdded then
+				connections.PlayerAdded = Players.PlayerAdded:Connect(function(player)
+
+					if player ~= LocalPlayer then
+
+						criarESP(player)
+
+						connections[player] = player.CharacterAdded:Connect(function()
+							repeat task.wait() until player.Character
+							task.wait(1)
+
+							if espDistAtivado then
+								criarESP(player)
+							end
+						end)
+
+					end
+				end)
+			end
+
+		else
+
+			limparESP()
+
+			for _, connection in pairs(connections) do
+				if typeof(connection) == "RBXScriptConnection" then
+					connection:Disconnect()
+				end
+			end
+
+			table.clear(connections)
+
 		end
 	end
 })
+
 
 
 
