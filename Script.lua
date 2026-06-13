@@ -62,7 +62,134 @@ local Config = MakeTab({Name = "Config"})
 
 
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
+local WalkSpeedEnabled = false
+local WalkSpeedValue = 25
+
+AddTextBox(Main,{
+	Name = "WalkSpeed",
+	Default = "25",
+	PlaceholderText = "16 - 250",
+	ClearText = true,
+	Callback = function(Value)
+		local Num = tonumber(Value)
+		if Num then
+			WalkSpeedValue = math.clamp(Num,16,250)
+		end
+	end
+})
+
+AddToggle(Main,{
+	Name = "WalkSpeed",
+	Default = false,
+	Callback = function(Value)
+		WalkSpeedEnabled = Value
+
+		local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		if Humanoid then
+			Humanoid.WalkSpeed = Value and WalkSpeedValue or 16
+		end
+	end
+})
+
+local JumpEnabled = false
+local JumpValue = 50
+
+AddTextBox(Main,{
+	Name = "JumpPower",
+	Default = "50",
+	PlaceholderText = "10 - 900",
+	ClearText = true,
+	Callback = function(Value)
+		local Num = tonumber(Value)
+		if Num then
+			JumpValue = math.clamp(Num,10,900)
+		end
+	end
+})
+
+AddToggle(Main,{
+	Name = "JumpPower",
+	Default = false,
+	Callback = function(Value)
+		JumpEnabled = Value
+
+		local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		if Humanoid then
+			Humanoid.UseJumpPower = true
+			Humanoid.JumpPower = Value and JumpValue or 50
+		end
+	end
+})
+
+local GravityEnabled = false
+local GravityValue = workspace.Gravity
+local DefaultGravity = workspace.Gravity
+
+AddTextBox(Main,{
+	Name = "Gravity",
+	Default = tostring(DefaultGravity),
+	PlaceholderText = "0 - 500",
+	ClearText = true,
+	Callback = function(Value)
+		local Num = tonumber(Value)
+		if Num then
+			GravityValue = math.clamp(Num,0,500)
+		end
+	end
+})
+
+AddToggle(Main,{
+	Name = "Gravity",
+	Default = false,
+	Callback = function(Value)
+		GravityEnabled = Value
+		workspace.Gravity = Value and GravityValue or DefaultGravity
+	end
+})
+
+task.spawn(function()
+	while task.wait(0.2) do
+		local Character = LocalPlayer.Character
+		local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+
+		if Humanoid then
+			if WalkSpeedEnabled then
+				Humanoid.WalkSpeed = WalkSpeedValue
+			end
+
+			if JumpEnabled then
+				Humanoid.UseJumpPower = true
+				Humanoid.JumpPower = JumpValue
+			end
+		end
+
+		if GravityEnabled then
+			workspace.Gravity = GravityValue
+		end
+	end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function(Character)
+	local Humanoid = Character:WaitForChild("Humanoid")
+
+	task.wait(0.5)
+
+	if WalkSpeedEnabled then
+		Humanoid.WalkSpeed = WalkSpeedValue
+	end
+
+	if JumpEnabled then
+		Humanoid.UseJumpPower = true
+		Humanoid.JumpPower = JumpValue
+	end
+
+	if GravityEnabled then
+		workspace.Gravity = GravityValue
+	end
+end)
 
 
 
