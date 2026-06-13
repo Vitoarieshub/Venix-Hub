@@ -194,38 +194,38 @@ fim )
 
 
 -- Noclip
-conexão local sem clipe
+local noclipConnection
 
-função toggleNoclip(ativar)
-    se habilitado então
-        se  não houver noclipConnection então
-            noclipConnection = game:GetService( "RunService" ).Stepped:Connect( function ()
-                para _, parte em pares(game.Players.LocalPlayer.Character:GetDescendants()) faça
-                    se parte:IsA( "BasePart" ) então
-                        parte.PodeColidir = falso
-                    fim
-                fim
-            fim )
-        fim
-    outro
-        se noclipConnection então
-            noclipConnection:Desconectar()
-            noclipConnection = nulo
-        fim
-        para _, parte em pares(game.Players.LocalPlayer.Character:GetDescendants()) faça
-            se parte:IsA( "BasePart" ) então
-                parte.PodeColidir = verdadeiro
-            fim
-        fim
-    fim
-fim
+function toggleNoclip(enable)
+    if enable then
+        if not noclipConnection then
+            noclipConnection = game:GetService("RunService").Stepped:Connect(function()
+                for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end)
+        end
+    else
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
+end
 
--- Alternar para ativar/desativar questões
-AdicionarAlternância(Jogador, {
-    Nome = "Desativar colisões "
-    Padrão = falso ,
-
-
+-- Toggle para ativar/desativar colisão
+AddToggle(Main, {
+    Name = "Disable Collisions", 
+    Default = false,
+    Callback = function(Value)
+        toggleNoclip(Value)
     end
 })
 
