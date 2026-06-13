@@ -68,7 +68,7 @@ local LocalPlayer = Players.LocalPlayer
 local WalkSpeedEnabled = false
 local WalkSpeedValue = 25
 
-AddTextBox(Main,{
+AddTextBox(Jogador,{
 	Name = "WalkSpeed",
 	Default = "25",
 	PlaceholderText = "16 - 250",
@@ -81,7 +81,7 @@ AddTextBox(Main,{
 	end
 })
 
-AddToggle(Main,{
+AddToggle(Jogador,{
 	Name = "WalkSpeed",
 	Default = false,
 	Callback = function(Value)
@@ -97,7 +97,7 @@ AddToggle(Main,{
 local JumpEnabled = false
 local JumpValue = 50
 
-AddTextBox(Main,{
+AddTextBox(Jogador,{
 	Name = "JumpPower",
 	Default = "50",
 	PlaceholderText = "10 - 900",
@@ -110,7 +110,7 @@ AddTextBox(Main,{
 	end
 })
 
-AddToggle(Main,{
+AddToggle(Jogador,{
 	Name = "JumpPower",
 	Default = false,
 	Callback = function(Value)
@@ -128,7 +128,7 @@ local GravityEnabled = false
 local GravityValue = workspace.Gravity
 local DefaultGravity = workspace.Gravity
 
-AddTextBox(Main,{
+AddTextBox(Jogador,{
 	Name = "Gravity",
 	Default = tostring(DefaultGravity),
 	PlaceholderText = "0 - 500",
@@ -141,7 +141,7 @@ AddTextBox(Main,{
 	end
 })
 
-AddToggle(Main,{
+AddToggle(Jogador,{
 	Name = "Gravity",
 	Default = false,
 	Callback = function(Value)
