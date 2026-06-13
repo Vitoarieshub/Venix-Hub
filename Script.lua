@@ -155,77 +155,77 @@ task.spawn(function()
 		local Character = LocalPlayer.Character
 		local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
 
-		if Humanoid then
-			if WalkSpeedEnabled then
-				Humanoid.WalkSpeed = WalkSpeedValue
-			end
+		se Humanoide então
+			se WalkSpeedEnabled então
+				Humanoide.VelocidadeDeCaminhada = ValorDaVelocidadeDeCaminhada
+			fim
 
-			if JumpEnabled then
-				Humanoid.UseJumpPower = true
-				Humanoid.JumpPower = JumpValue
-			end
-		end
+			se JumpEnabled então
+				Humanoide.UsarPoderDeSalto = verdadeiro
+				Humanoide.PoderDeSalto = ValorDoSalto
+			fim
+		fim
 
-		if GravityEnabled then
-			workspace.Gravity = GravityValue
-		end
-	end
-end)
+		se GravityEnabled então
+			espaço de trabalho.Gravidade = ValorGravidade
+		fim
+	fim
+fim )
 
-LocalPlayer.CharacterAdded:Connect(function(Character)
-	local Humanoid = Character:WaitForChild("Humanoid")
+JogadorLocal.PersonagemAdicionado:Conectar( função (Personagem)
+	local Humanoid = Character:WaitForChild( "Humanoid" )
 
-	task.wait(0.5)
+	tarefa.esperar( 0.5 )
 
-	if WalkSpeedEnabled then
-		Humanoid.WalkSpeed = WalkSpeedValue
-	end
+	se WalkSpeedEnabled então
+		Humanoide.VelocidadeDeCaminhada = ValorDaVelocidadeDeCaminhada
+	fim
 
-	if JumpEnabled then
-		Humanoid.UseJumpPower = true
-		Humanoid.JumpPower = JumpValue
-	end
+	se JumpEnabled então
+		Humanoide.UsarPoderDeSalto = verdadeiro
+		Humanoide.PoderDeSalto = ValorDoSalto
+	fim
 
-	if GravityEnabled then
-		workspace.Gravity = GravityValue
-	end
-end)
+	se GravityEnabled então
+		espaço de trabalho.Gravidade = ValorGravidade
+	fim
+fim )
 
 
 
 -- Noclip
-local noclipConnection
+conexão local sem clipe
 
-function toggleNoclip(enable)
-    if enable then
-        if not noclipConnection then
-            noclipConnection = game:GetService("RunService").Stepped:Connect(function()
-                for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end)
-        end
-    else
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
-        for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
-    end
-end
+função toggleNoclip(ativar)
+    se habilitado então
+        se  não houver noclipConnection então
+            noclipConnection = game:GetService( "RunService" ).Stepped:Connect( function ()
+                para _, parte em pares(game.Players.LocalPlayer.Character:GetDescendants()) faça
+                    se parte:IsA( "BasePart" ) então
+                        parte.PodeColidir = falso
+                    fim
+                fim
+            fim )
+        fim
+    outro
+        se noclipConnection então
+            noclipConnection:Desconectar()
+            noclipConnection = nulo
+        fim
+        para _, parte em pares(game.Players.LocalPlayer.Character:GetDescendants()) faça
+            se parte:IsA( "BasePart" ) então
+                parte.PodeColidir = verdadeiro
+            fim
+        fim
+    fim
+fim
 
--- Toggle para ativar/desativar colisão
-AddToggle(Jogador, {
-    Name = "Disable Collisions", 
-    Default = false,
-    Callback = function(Value)
-        toggleNoclip(Value)
+-- Alternar para ativar/desativar questões
+AdicionarAlternância(Jogador, {
+    Nome = "Desativar colisões "
+    Padrão = falso ,
+
+
     end
 })
 
@@ -680,62 +680,90 @@ AddToggle(Visuais, {
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local espDistAtivado = false
-local connections = {}
+local ESPEnabled = false
+local Connections = {}
 
-local function criarESP(player)
-	if player == LocalPlayer then return end
+local function CreateESP(Player)
+	if Player == LocalPlayer then
+		return
+	end
 
 	task.spawn(function()
-		while espDistAtivado and player and player.Character do
-			local char = player.Character
-			local root = char:FindFirstChild("HumanoidRootPart")
-			local humanoid = char:FindFirstChild("Humanoid")
+		while ESPEnabled and Player and Player.Parent do
+			local Character = Player.Character
+			local Root = Character and Character:FindFirstChild("HumanoidRootPart")
+			local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
 
-			if root and humanoid and humanoid.Health > 0 then
-				local esp = root:FindFirstChild("ESP_Distance")
+			if Root and Humanoid and Humanoid.Health > 0 then
+				local ESP = Root:FindFirstChild("ESP_Distance")
 
-				if not esp then
-					esp = Instance.new("BillboardGui")
-					esp.Name = "ESP_Distance"
-					esp.Adornee = root
-					esp.Size = UDim2.new(0, 100, 0, 30)
-					esp.StudsOffset = Vector3.new(0, -3, 0)
-					esp.AlwaysOnTop = true
-					esp.Parent = root
+				if not ESP then
+					ESP = Instance.new("BillboardGui")
+					ESP.Name = "ESP_Distance"
+					ESP.Adornee = Root
+					ESP.Size = UDim2.new(0, 60, 0, 16)
+					ESP.StudsOffset = Vector3.new(0, -2, 0)
+					ESP.AlwaysOnTop = true
+					ESP.Parent = Root
 
-					local text = Instance.new("TextLabel")
-					text.Name = "Texto"
-					text.Size = UDim2.new(1, 0, 1, 0)
-					text.BackgroundTransparency = 1
-					text.TextColor3 = Color3.new(1, 1, 1)
-					text.TextStrokeTransparency = 0
-					text.Font = Enum.Font.GothamBold
-					text.TextSize = 14
-					text.Parent = esp
+					local Text = Instance.new("TextLabel")
+					Text.Name = "Text"
+					Text.Size = UDim2.new(1, 0, 1, 0)
+					Text.BackgroundTransparency = 1
+					Text.TextColor3 = Color3.new(1, 1, 1)
+					Text.TextStrokeTransparency = 0
+					Text.Font = Enum.Font.Gotham
+					Text.TextSize = 10
+					Text.Parent = ESP
 				end
 
-				local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				local MyCharacter = LocalPlayer.Character
+				local MyRoot = MyCharacter and MyCharacter:FindFirstChild("HumanoidRootPart")
 
-				if myRoot then
-					local distancia = math.floor((myRoot.Position - root.Position).Magnitude)
-					esp.Texto.Text = distancia .. "m"
+				if MyRoot then
+					local Distance = math.floor((MyRoot.Position - Root.Position).Magnitude)
+					ESP.Text.Text = Distance .. "m"
 				end
 			end
 
-			task.wait(0.2)
+			task.wait(0.5)
 		end
 	end)
 end
 
-local function limparESP()
-	for _, player in ipairs(Players:GetPlayers()) do
-		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-			local esp = player.Character.HumanoidRootPart:FindFirstChild("ESP_Distance")
-			if esp then
-				esp:Destroy()
+local function RemoveESP()
+	for _, Player in ipairs(Players:GetPlayers()) do
+		local Character = Player.Character
+
+		if Character then
+			local Root = Character:FindFirstChild("HumanoidRootPart")
+
+			if Root then
+				local ESP = Root:FindFirstChild("ESP_Distance")
+
+				if ESP then
+					ESP:Destroy()
+				end
 			end
 		end
+	end
+end
+
+local function SetupPlayer(Player)
+	if Connections[Player] then
+		Connections[Player]:Disconnect()
+	end
+
+	Connections[Player] = Player.CharacterAdded:Connect(function()
+		task.wait(1)
+
+		if ESPEnabled then
+			CreateESP(Player)
+		end
+	end)
+
+	if Player.Character then
+		CreateESP(Player)
 	end
 end
 
@@ -743,21 +771,28 @@ AddToggle(Visuais,{
 	Name = "ESP Distance",
 	Default = false,
 	Callback = function(Value)
-		espDistAtivado = Value
+		ESPEnabled = Value
 
 		if Value then
-			for _, player in ipairs(Players:GetPlayers()) do
-				criarESP(player)
+			for _, Player in ipairs(Players:GetPlayers()) do
+				SetupPlayer(Player)
+			end
 
-				if not connections[player] then
-					connections[player] = player.CharacterAdded:Connect(function()
-						task.wait(1)
-						criarESP(player)
-					end)
-				end
+			if not Connections.PlayerAdded then
+				Connections.PlayerAdded = Players.PlayerAdded:Connect(function(Player)
+					SetupPlayer(Player)
+				end)
 			end
 		else
-			limparESP()
+			RemoveESP()
+
+			for _, Connection in pairs(Connections) do
+				if typeof(Connection) == "RBXScriptConnection" then
+					Connection:Disconnect()
+				end
+			end
+
+			table.clear(Connections)
 		end
 	end
 })
