@@ -61,6 +61,8 @@ local Combate = MakeTab({Name = "Combate"})
 local Config = MakeTab({Name = "Config"})
 
 
+
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
