@@ -63,129 +63,133 @@ local Config = MakeTab({Name = "Config"})
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local Workspace = game:GetService("Workspace")
 
--- Estado atual
-local velocidadeAtivada = false
-local velocidadeValor = 25
+local WalkSpeedEnabled = false
+local WalkSpeedValue = 25
 
-local jumpAtivado = false
-local jumpPowerSelecionado = 40
-local jumpPowerPadrao = 50
-
-local gravidadeAtivada = false
-local gravidadeSelecionada = 196.2
-local gravidadePadrao = 196.2
-
--- Função para aplicar velocidade
-local function aplicarVelocidade(character)
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if humanoid and velocidadeAtivada then
-		humanoid.WalkSpeed = velocidadeValor
-	elseif humanoid then
-		humanoid.WalkSpeed = 16
+AddTextBox(Main,{
+	Name = "WalkSpeed",
+	Default = "25",
+	PlaceholderText = "16 - 250",
+	ClearText = true,
+	Callback = function(Value)
+		local Num = tonumber(Value)
+		if Num then
+			WalkSpeedValue = math.clamp(Num,16,250)
+		end
 	end
-end
+})
 
--- Função para aplicar super pulo
-local function aplicarJumpPower(character)
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if humanoid then
-		humanoid.UseJumpPower = true
-		humanoid.JumpPower = jumpAtivado and jumpPowerSelecionado or jumpPowerPadrao
+AddToggle(Main,{
+	Name = "WalkSpeed",
+	Default = false,
+	Callback = function(Value)
+		WalkSpeedEnabled = Value
+
+		local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		if Humanoid then
+			Humanoid.WalkSpeed = Value and WalkSpeedValue or 16
+		end
 	end
-end
+})
 
--- Aplica toda vez que o personagem renasce
-LocalPlayer.CharacterAdded:Connect(function(character)
-	character:WaitForChild("Humanoid")
-	task.wait(0.1)
-	aplicarVelocidade(character)
-	aplicarJumpPower(character)
+local JumpEnabled = false
+local JumpValue = 50
 
-	if gravidadeAtivada then
-		Workspace.Gravity = gravidadeSelecionada
-	else
-		Workspace.Gravity = gravidadePadrao
+AddTextBox(Main,{
+	Name = "JumpPower",
+	Default = "50",
+	PlaceholderText = "10 - 900",
+	ClearText = true,
+	Callback = function(Value)
+		local Num = tonumber(Value)
+		if Num then
+			JumpValue = math.clamp(Num,10,900)
+		end
+	end
+})
+
+AddToggle(Main,{
+	Name = "JumpPower",
+	Default = false,
+	Callback = function(Value)
+		JumpEnabled = Value
+
+		local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		if Humanoid then
+			Humanoid.UseJumpPower = true
+			Humanoid.JumpPower = Value and JumpValue or 50
+		end
+	end
+})
+
+local GravityEnabled = false
+local GravityValue = workspace.Gravity
+local DefaultGravity = workspace.Gravity
+
+AddTextBox(Main,{
+	Name = "Gravity",
+	Default = tostring(DefaultGravity),
+	PlaceholderText = "0 - 500",
+	ClearText = true,
+	Callback = function(Value)
+		local Num = tonumber(Value)
+		if Num then
+			GravityValue = math.clamp(Num,0,500)
+		end
+	end
+})
+
+AddToggle(Main,{
+	Name = "Gravity",
+	Default = false,
+	Callback = function(Value)
+		GravityEnabled = Value
+		workspace.Gravity = Value and GravityValue or DefaultGravity
+	end
+})
+
+task.spawn(function()
+	while task.wait(0.2) do
+		local Character = LocalPlayer.Character
+		local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+
+		if Humanoid then
+			if WalkSpeedEnabled then
+				Humanoid.WalkSpeed = WalkSpeedValue
+			end
+
+			if JumpEnabled then
+				Humanoid.UseJumpPower = true
+				Humanoid.JumpPower = JumpValue
+			end
+		end
+
+		if GravityEnabled then
+			workspace.Gravity = GravityValue
+		end
 	end
 end)
 
+LocalPlayer.CharacterAdded:Connect(function(Character)
+	local Humanoid = Character:WaitForChild("Humanoid")
 
--- Velocidade
-AddSlider(Jogador, {
-	Name = "Velocidade",
-	MinValue = 16,
-	MaxValue = 250,
-	Default = 25,
-	Increase = 1,
-	Callback = function(Value)
-		velocidadeValor = Value
-		if velocidadeAtivada and LocalPlayer.Character then
-			aplicarVelocidade(LocalPlayer.Character)
-		end
-	end
-})
+	task.wait(0.5)
 
-AddToggle(Jogador, {
-	Name = "Velocidade",
-	Default = false,
-	Callback = function(Value)
-		velocidadeAtivada = Value
-		if LocalPlayer.Character then
-			aplicarVelocidade(LocalPlayer.Character)
-		end
+	if WalkSpeedEnabled then
+		Humanoid.WalkSpeed = WalkSpeedValue
 	end
-})
 
--- Super Jump
-AddSlider(Jogador, {
-	Name = "Super Pulo",
-	MinValue = 10,
-	MaxValue = 900,
-	Default = 40,
-	Increase = 1,
-	Callback = function(Value)
-		jumpPowerSelecionado = Value
-		if jumpAtivado and LocalPlayer.Character then
-			aplicarJumpPower(LocalPlayer.Character)
-		end
+	if JumpEnabled then
+		Humanoid.UseJumpPower = true
+		Humanoid.JumpPower = JumpValue
 	end
-})
 
-AddToggle(Jogador, {
-	Name = "Super Pulo",
-	Default = false,
-	Callback = function(Value)
-		jumpAtivado = Value
-		if LocalPlayer.Character then
-			aplicarJumpPower(LocalPlayer.Character)
-		end
+	if GravityEnabled then
+		workspace.Gravity = GravityValue
 	end
-})
+end)
 
--- Gravidade
-AddSlider(Jogador, {
-	Name = "Gravidade",
-	MinValue = 0,
-	MaxValue = 500,
-	Default = 196.2,
-	Increase = 1,
-	Callback = function(Value)
-		gravidadeSelecionada = Value
-		if gravidadeAtivada then
-			Workspace.Gravity = gravidadeSelecionada
-		end
-	end
-})
-
-AddToggle(Jogador, {
-	Name = "Gravidade",
-	Default = false,
-	Callback = function(Value)
-		gravidadeAtivada = Value
-		Workspace.Gravity = Value and gravidadeSelecionada or gravidadePadrao
-	end
-})
 
 
 -- Noclip
