@@ -760,7 +760,7 @@ local LocalPlayer = Players.LocalPlayer
 local linhas = {}
 local espConnections = {}
 local espLinhaAtivado = false
-local corVermelha = Color3.fromRGB(255, 0, 0)
+local corVermelha = Color3.fromRGB(255, 255, 255)
 
 local function criarLinha(player)
     if player == LocalPlayer then return end
