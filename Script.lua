@@ -62,134 +62,7 @@ local Config = MakeTab({Name = "Config"})
 
 
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 
-local WalkSpeedEnabled = false
-local WalkSpeedValue = 25
-
-AddTextBox(Jogador,{
-	Name = "WalkSpeed",
-	Default = "25",
-	PlaceholderText = "16 - 250",
-	ClearText = true,
-	Callback = function(Value)
-		local Num = tonumber(Value)
-		if Num then
-			WalkSpeedValue = math.clamp(Num,16,250)
-		end
-	end
-})
-
-AddToggle(Jogador,{
-	Name = "WalkSpeed",
-	Default = false,
-	Callback = function(Value)
-		WalkSpeedEnabled = Value
-
-		local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-		if Humanoid then
-			Humanoid.WalkSpeed = Value and WalkSpeedValue or 16
-		end
-	end
-})
-
-local JumpEnabled = false
-local JumpValue = 50
-
-AddTextBox(Jogador,{
-	Name = "JumpPower",
-	Default = "50",
-	PlaceholderText = "10 - 900",
-	ClearText = true,
-	Callback = function(Value)
-		local Num = tonumber(Value)
-		if Num then
-			JumpValue = math.clamp(Num,10,900)
-		end
-	end
-})
-
-AddToggle(Jogador,{
-	Name = "JumpPower",
-	Default = false,
-	Callback = function(Value)
-		JumpEnabled = Value
-
-		local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-		if Humanoid then
-			Humanoid.UseJumpPower = true
-			Humanoid.JumpPower = Value and JumpValue or 50
-		end
-	end
-})
-
-local GravityEnabled = false
-local GravityValue = workspace.Gravity
-local DefaultGravity = workspace.Gravity
-
-AddTextBox(Jogador,{
-	Name = "Gravity",
-	Default = tostring(DefaultGravity),
-	PlaceholderText = "0 - 500",
-	ClearText = true,
-	Callback = function(Value)
-		local Num = tonumber(Value)
-		if Num then
-			GravityValue = math.clamp(Num,0,500)
-		end
-	end
-})
-
-AddToggle(Jogador,{
-	Name = "Gravity",
-	Default = false,
-	Callback = function(Value)
-		GravityEnabled = Value
-		workspace.Gravity = Value and GravityValue or DefaultGravity
-	end
-})
-
-task.spawn(function()
-	while task.wait(0.2) do
-		local Character = LocalPlayer.Character
-		local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-
-		se Humanoide então
-			se WalkSpeedEnabled então
-				Humanoide.VelocidadeDeCaminhada = ValorDaVelocidadeDeCaminhada
-			fim
-
-			se JumpEnabled então
-				Humanoide.UsarPoderDeSalto = verdadeiro
-				Humanoide.PoderDeSalto = ValorDoSalto
-			fim
-		fim
-
-		se GravityEnabled então
-			espaço de trabalho.Gravidade = ValorGravidade
-		fim
-	fim
-fim )
-
-JogadorLocal.PersonagemAdicionado:Conectar( função (Personagem)
-	local Humanoid = Character:WaitForChild( "Humanoid" )
-
-	tarefa.esperar( 0.5 )
-
-	se WalkSpeedEnabled então
-		Humanoide.VelocidadeDeCaminhada = ValorDaVelocidadeDeCaminhada
-	fim
-
-	se JumpEnabled então
-		Humanoide.UsarPoderDeSalto = verdadeiro
-		Humanoide.PoderDeSalto = ValorDoSalto
-	fim
-
-	se GravityEnabled então
-		espaço de trabalho.Gravidade = ValorGravidade
-	fim
-fim )
 
 
 
@@ -221,7 +94,7 @@ function toggleNoclip(enable)
 end
 
 -- Toggle para ativar/desativar colisão
-AddToggle(Main, {
+AddToggle(Jogador, {
     Name = "Disable Collisions", 
     Default = false,
     Callback = function(Value)
