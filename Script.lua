@@ -677,6 +677,92 @@ AddToggle(Visuais, {
 })
 
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local espDistAtivado = false
+local connections = {}
+
+local function criarESP(player)
+	if player == LocalPlayer then return end
+
+	task.spawn(function()
+		while espDistAtivado and player and player.Character do
+			local char = player.Character
+			local root = char:FindFirstChild("HumanoidRootPart")
+			local humanoid = char:FindFirstChild("Humanoid")
+
+			if root and humanoid and humanoid.Health > 0 then
+				local esp = root:FindFirstChild("ESP_Distance")
+
+				if not esp then
+					esp = Instance.new("BillboardGui")
+					esp.Name = "ESP_Distance"
+					esp.Adornee = root
+					esp.Size = UDim2.new(0, 100, 0, 30)
+					esp.StudsOffset = Vector3.new(0, -3, 0)
+					esp.AlwaysOnTop = true
+					esp.Parent = root
+
+					local text = Instance.new("TextLabel")
+					text.Name = "Texto"
+					text.Size = UDim2.new(1, 0, 1, 0)
+					text.BackgroundTransparency = 1
+					text.TextColor3 = Color3.new(1, 1, 1)
+					text.TextStrokeTransparency = 0
+					text.Font = Enum.Font.GothamBold
+					text.TextSize = 14
+					text.Parent = esp
+				end
+
+				local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+				if myRoot then
+					local distancia = math.floor((myRoot.Position - root.Position).Magnitude)
+					esp.Texto.Text = distancia .. "m"
+				end
+			end
+
+			task.wait(0.2)
+		end
+	end)
+end
+
+local function limparESP()
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local esp = player.Character.HumanoidRootPart:FindFirstChild("ESP_Distance")
+			if esp then
+				esp:Destroy()
+			end
+		end
+	end
+end
+
+AddToggle(Visuais,{
+	Name = "ESP Distance",
+	Default = false,
+	Callback = function(Value)
+		espDistAtivado = Value
+
+		if Value then
+			for _, player in ipairs(Players:GetPlayers()) do
+				criarESP(player)
+
+				if not connections[player] then
+					connections[player] = player.CharacterAdded:Connect(function()
+						task.wait(1)
+						criarESP(player)
+					end)
+				end
+			end
+		else
+			limparESP()
+		end
+	end
+})
+
+
 
 local espAtivado = false
 local Players = game:GetService("Players")
