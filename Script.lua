@@ -1340,3 +1340,101 @@ AddSlider(Combate, {
         FOVCircle.Radius = FOVRadius
     end
 })
+
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+local notificacaoAtivada = false
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "NotifierGUI"
+ScreenGui.Parent = game.CoreGui
+
+local function notify(title, text)
+    if not notificacaoAtivada then return end
+
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 280, 0, 80)
+    Frame.Position = UDim2.new(1, 20, 1, -150)
+    Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    Frame.BorderSizePixel = 0
+    Frame.Parent = ScreenGui
+    Frame.Visible = false
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 12)
+    UICorner.Parent = Frame
+
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Thickness = 2
+    UIStroke.Color = Color3.fromRGB(40, 40, 40)
+    UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    UIStroke.Parent = Frame
+
+    local Shadow = Instance.new("ImageLabel")
+    Shadow.Size = UDim2.new(1, 20, 1, 20)
+    Shadow.Position = UDim2.new(0, -10, 0, -10)
+    Shadow.BackgroundTransparency = 1
+    Shadow.Image = "rbxassetid://5028857084"
+    Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    Shadow.ImageTransparency = 0.4
+    Shadow.ScaleType = Enum.ScaleType.Slice
+    Shadow.SliceCenter = Rect.new(24, 24, 276, 276)
+    Shadow.Parent = Frame
+
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(1, -20, 0, 25)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 5)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = title
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 20
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Parent = Frame
+
+    local MessageLabel = Instance.new("TextLabel")
+    MessageLabel.Size = UDim2.new(1, -20, 0, 40)
+    MessageLabel.Position = UDim2.new(0, 10, 0, 35)
+    MessageLabel.BackgroundTransparency = 1
+    MessageLabel.Text = text
+    MessageLabel.Font = Enum.Font.Gotham
+    MessageLabel.TextSize = 16
+    MessageLabel.TextWrapped = true
+    MessageLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    MessageLabel.TextXAlignment = Enum.TextXAlignment.Left
+    MessageLabel.TextYAlignment = Enum.TextYAlignment.Top
+    MessageLabel.Parent = Frame
+
+    Frame.Visible = true
+    TweenService:Create(Frame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Position = UDim2.new(1, -300, 1, -150)
+    }):Play()
+
+    task.delay(4, function()
+        TweenService:Create(Frame, TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
+            Position = UDim2.new(1, 20, 1, -150)
+        }):Play()
+        task.wait(0.5)
+        Frame:Destroy()
+    end)
+end
+
+Players.PlayerAdded:Connect(function(player)
+    notify("Player", player.Name .." Entrou no jogo!")
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    notify("Player", player.Name .. " Abandonou o jogo.")
+end)
+
+AddToggle(Config, {
+    Name = "Player Notifications",
+    Default = false,
+    Callback = function(Value)
+        notificacaoAtivada = Value
+    end
+})
+
+
