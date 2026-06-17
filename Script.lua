@@ -69,7 +69,7 @@ local WalkSpeedEnabled = false
 local WalkSpeedValue = 25
 
 AddTextBox(Jogador,{
-	Name = "WalkSpeed",
+	Name = "Velocidade",
 	Default = "25",
 	PlaceholderText = "16 - 250",
 	ClearText = true,
@@ -82,7 +82,7 @@ AddTextBox(Jogador,{
 })
 
 AddToggle(Jogador,{
-	Name = "WalkSpeed",
+	Name = "Velocidade",
 	Default = false,
 	Callback = function(Value)
 		WalkSpeedEnabled = Value
@@ -98,7 +98,7 @@ local JumpEnabled = false
 local JumpValue = 50
 
 AddTextBox(Jogador,{
-	Name = "JumpPower",
+	Name = "Super pulo",
 	Default = "50",
 	PlaceholderText = "10 - 900",
 	ClearText = true,
@@ -111,8 +111,8 @@ AddTextBox(Jogador,{
 })
 
 AddToggle(Jogador,{
-	Name = "JumpPower",
-	Default = false,
+	Name = "Super pulo",
+	Default = JumpPower,
 	Callback = function(Value)
 		JumpEnabled = Value
 
@@ -129,7 +129,7 @@ local GravityValue = workspace.Gravity
 local DefaultGravity = workspace.Gravity
 
 AddTextBox(Jogador,{
-	Name = "Gravity",
+	Name = "Gravidade",
 	Default = tostring(DefaultGravity),
 	PlaceholderText = "0 - 500",
 	ClearText = true,
@@ -142,7 +142,7 @@ AddTextBox(Jogador,{
 })
 
 AddToggle(Jogador,{
-	Name = "Gravity",
+	Name = "Gravidade",
 	Default = false,
 	Callback = function(Value)
 		GravityEnabled = Value
@@ -222,7 +222,7 @@ end
 
 -- Toggle para ativar/desativar colisão
 AddToggle(Jogador, {
-    Name = "Disable Collisions", 
+    Name = "Desativar colisões", 
     Default = false,
     Callback = function(Value)
         toggleNoclip(Value)
@@ -384,7 +384,7 @@ AddButton(Jogador, {
 
 
 AddButton(Jogador, {
-    Name = "Fling All",
+    Name = "Arremessar Todos",
     Callback = function()
         print("Botão foi clicado!")
         pcall(function()
