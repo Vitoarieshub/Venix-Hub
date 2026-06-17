@@ -813,7 +813,7 @@ Players.PlayerAdded:Connect(function(player)
 end)
 
 AddToggle(Visuais, {
-    Name = "ESP Box",
+    Name = "ESP Caixa",
     Default = false,
     Callback = function(Value)
         espAtivado = Value
@@ -905,7 +905,7 @@ function desativarESP()
 end
 
 AddToggle(Visuais, {
-    Name = "ESP Line",
+    Name = "ESP Linha",
     Default = false,
     Callback = function(Value)
         espLinhaAtivado = Value
@@ -986,7 +986,7 @@ end
 
 -- Toggle Anti Sit
 AddToggle(Config, {
-	Name = "Anti Sit",
+	Name = "Anti Sentar",
 	Default = false,
 	Callback = function(Value)
 		antiSeatEnabled = Value
@@ -1085,7 +1085,7 @@ local function enableTracking()
 end
 
 AddToggle(Config, {
-    Name = "Anti Fling",
+    Name = "Anti Arremesso",
     Default = false,
     Callback = function(state)
         antiFlingEnabled = state
@@ -1441,11 +1441,10 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 AddToggle(Config, {
-    Name = "Player Notifications",
+    Name = "Notificações do jogadores",
     Default = false,
     Callback = function(Value)
         notificacaoAtivada = Value
     end
 })
-
 
