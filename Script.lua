@@ -383,6 +383,17 @@ AddButton(Jogador, {
 })
 
 
+AddButton(Main, {
+    Name = "Fling All",
+    Callback = function()
+        print("Botão foi clicado!")
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Vitoarieshub/Fling-Univesal-Venix/refs/heads/main/Venix%20Universal"))()
+        end)
+    end
+})
+
+
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
