@@ -383,7 +383,7 @@ AddButton(Jogador, {
 })
 
 
-AddButton(Main, {
+AddButton(Jogador, {
     Name = "Fling All",
     Callback = function()
         print("Botão foi clicado!")
