@@ -1448,33 +1448,3 @@ AddToggle(Config, {
     end
 })
 
-
--- Referência ao objeto
-local target = workspace:GetChildren()[140]:GetChildren()[2]
-
--- Função para alterar colisão
-local function setCollision(enabled)
-    for _, obj in ipairs(target:GetDescendants()) do
-        if obj:IsA("BasePart") then
-            obj.CanCollide = enabled
-        end
-    end
-end
-
--- Aplica também ao objeto principal caso seja uma BasePart
-if target:IsA("BasePart") then
-    target.CanCollide = true
-end
-
--- Toggle
-AddToggle(Jogador, {
-    Name = "Colisão das Paredes",
-    Default = true,
-    Callback = function(Value)
-        setCollision(Value)
-
-        if target:IsA("BasePart") then
-            target.CanCollide = Value
-        end
-    end
-})
