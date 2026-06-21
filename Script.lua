@@ -44,7 +44,7 @@ MakeWindow({
 
 MinimizeButton({
     Image = "rbxassetid://112246739043935",
-    Size = {50, 50},
+    Size = {40, 40},
     Color = Color3.fromRGB(10, 10, 10),
     Corner = true,                       
     CornerRadius = UDim.new(1, 0),       
