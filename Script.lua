@@ -289,53 +289,176 @@ local Toggle = AddToggle(Jogador, {
 })
 
 
-
 local Players = game:GetService("Players")
-local Camera = workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
+local Player = Players.LocalPlayer
+local AllBool = false
+local jogadorDigitado = ""
+local scriptAtivo = true
 
-local playerName = ""
-local jogadorSelecionado = nil
-local observarConnection = nil
-local observando = false
+local visualizando = false
+local conexaoCam = nil
 
-local function encontrarJogador(nome)
-	local lowerName = nome:lower()
-	for _, player in pairs(Players:GetPlayers()) do
-		if player.Name:lower():sub(1, #lowerName) == lowerName then
-			return player
-		end
-	end
-	return nil
+getgenv().FPDH = workspace.FallenPartsDestroyHeight
+
+local GetPlayer = function(Name)
+    Name = Name:lower()
+    if Name == "all" or Name == "others" then
+        AllBool = true
+        return nil
+    elseif Name == "random" then
+        local GetPlayers = Players:GetPlayers()
+        if table.find(GetPlayers, Player) then table.remove(GetPlayers, table.find(GetPlayers, Player)) end
+        return GetPlayers[math.random(#GetPlayers)]
+    elseif Name ~= "random" and Name ~= "all" and Name ~= "others" then
+        for _, x in next, Players:GetPlayers() do
+            if x ~= Player then
+                if x.Name:lower():match("^" .. Name) or x.DisplayName:lower():match("^" .. Name) then
+                    return x
+                end
+            end
+        end
+    end
+    return nil
 end
 
-local function pararObservar()
-	if observarConnection then
-		observarConnection:Disconnect()
-		observarConnection = nil
-	end
-	observando = false
-	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-		Camera.CameraSubject = LocalPlayer.Character.Humanoid
-	end
+local Message = function(_Title, _Text, Time)
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title = _Title, Text = _Text, Duration = Time})
 end
 
-local function iniciarObservar(jogador)
-	if not jogador or jogador == LocalPlayer then return end
-	observando = true
-	if jogador.Character and jogador.Character:FindFirstChild("Humanoid") then
-		Camera.CameraSubject = jogador.Character.Humanoid
-	end
-	if observarConnection then
-		observarConnection:Disconnect()
-	end
-	observarConnection = jogador.CharacterAdded:Connect(function(char)
-		task.wait(0.5)
-		local humanoid = char:FindFirstChild("Humanoid")
-		if observando and humanoid then
-			Camera.CameraSubject = humanoid
-		end
-	end)
+local SkidFling = function(TargetPlayer)
+    if not TargetPlayer or not scriptAtivo then return end
+    
+    local Character = Player.Character
+    local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+    local RootPart = Humanoid and Humanoid.RootPart
+    local TCharacter = TargetPlayer.Character
+
+    if not TCharacter or not Character or not Humanoid or not RootPart then return end
+
+    local THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
+    local TRootPart = THumanoid and THumanoid.RootPart
+    local THead = TCharacter:FindFirstChild("Head")
+    local Accessory = TCharacter:FindFirstChildOfClass("Accessory")
+    local Handle = Accessory and Accessory:FindFirstChild("Handle")
+
+    if RootPart.Velocity.Magnitude < 50 then
+        getgenv().OldPos = RootPart.CFrame
+    end
+    if THumanoid and THumanoid.Sit and not AllBool then
+        return Message("Erro", "O alvo está sentado", 5)
+    end
+    if THead and not visualizando then
+        workspace.CurrentCamera.CameraSubject = THead
+    elseif not THead and Handle and not visualizando then
+        workspace.CurrentCamera.CameraSubject = Handle
+    elseif THumanoid and TRootPart and not visualizando then
+        workspace.CurrentCamera.CameraSubject = THumanoid
+    end
+    if not TCharacter:FindFirstChildWhichIsA("BasePart") then
+        return
+    end
+    
+    local FPos = function(BasePart, Pos, Ang)
+        RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
+        Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
+        RootPart.Velocity = Vector3.new(9e7, 9e7 * 10, 9e7)
+        RootPart.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
+    end
+    
+    local SFBasePart = function(BasePart)
+        local TimeToWait = 2
+        local Time = tick()
+        local Angle = 0
+
+        repeat
+            if RootPart and THumanoid then
+                if BasePart.Velocity.Magnitude < 50 then
+                    Angle = Angle + 100
+                    FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0 ,0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection, CFrame.Angles(math.rad(Angle), 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection, CFrame.Angles(math.rad(Angle), 0, 0))
+                    task.wait()
+                else
+                    FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, -THumanoid.WalkSpeed), CFrame.Angles(0, 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, 1.5, TRootPart.Velocity.Magnitude / 1.25), CFrame.Angles(math.rad(90), 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, -TRootPart.Velocity.Magnitude / 1.25), CFrame.Angles(0, 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, 1.5, TRootPart.Velocity.Magnitude / 1.25), CFrame.Angles(math.rad(90), 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(90), 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5 ,0), CFrame.Angles(math.rad(-90), 0, 0))
+                    task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
+                    task.wait()
+                end
+            else
+                break
+            end
+        until BasePart.Velocity.Magnitude > 500 or BasePart.Parent ~= TargetPlayer.Character or TargetPlayer.Parent ~= Players or not TargetPlayer.Character == TCharacter or THumanoid.Sit or Humanoid.Health <= 0 or tick() > Time + TimeToWait
+    end
+    
+    workspace.FallenPartsDestroyHeight = 0/0
+    
+    local BV = Instance.new("BodyVelocity")
+    BV.Name = "EpixVel"
+    BV.Parent = RootPart
+    BV.Velocity = Vector3.new(9e8, 9e8, 9e8)
+    BV.MaxForce = Vector3.new(1/0, 1/0, 1/0)
+    
+    Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+    
+    if TRootPart and THead then
+        if (TRootPart.CFrame.p - THead.CFrame.p).Magnitude > 5 then
+            SFBasePart(THead)
+        else
+            SFBasePart(TRootPart)
+        end
+    elseif TRootPart and not THead then
+        SFBasePart(TRootPart)
+    elseif not TRootPart and THead then
+        SFBasePart(THead)
+    elseif not TRootPart and not THead and Accessory and Handle then
+        SFBasePart(Handle)
+    else
+        return Message("Erro", "Alvo inconsistente", 5)
+    end
+    
+    BV:Destroy()
+    Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+    
+    if not visualizando then
+        workspace.CurrentCamera.CameraSubject = Humanoid
+    end
+    
+    repeat
+        RootPart.CFrame = getgenv().OldPos * CFrame.new(0, .5, 0)
+        Character:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, .5, 0))
+        Humanoid:ChangeState("GettingUp")
+        table.foreach(Character:GetChildren(), function(_, x)
+            if x:IsA("BasePart") then
+                x.Velocity, x.RotVelocity = Vector3.new(), Vector3.new()
+            end
+        end)
+        task.wait()
+    until (RootPart.Position - getgenv().OldPos.p).Magnitude < 25
+    workspace.FallenPartsDestroyHeight = getgenv().FPDH
 end
 
 AddTextBox(Jogador, {
@@ -343,28 +466,38 @@ AddTextBox(Jogador, {
 	Default = "",
 	Placeholder = "Nome do jogador",
 	Callback = function(text)
-		playerName = text
-		local novoJogador = encontrarJogador(playerName)
-		if novoJogador ~= jogadorSelecionado then
-			jogadorSelecionado = novoJogador
-			if observando and jogadorSelecionado then
-				iniciarObservar(jogadorSelecionado)
-			end
-		end
+		jogadorDigitado = text
 	end
 })
 
 AddToggle(Jogador, {
 	Name = "Visualizar",
 	Default = false,
-	Callback = function(Value)
-		jogadorSelecionado = encontrarJogador(playerName)
-		if Value then
-			if jogadorSelecionado then
-				iniciarObservar(jogadorSelecionado)
+	Callback = function(state)
+		visualizando = state
+		
+		if conexaoCam then 
+			conexaoCam:Disconnect() 
+			conexaoCam = nil 
+		end
+
+		if visualizando then
+			if jogadorDigitado and jogadorDigitado ~= "" then
+				local alvo = GetPlayer(jogadorDigitado)
+				if alvo then
+					local focarCamera = function(char)
+						if char then
+							local hum = char:WaitForChild("Humanoid", 5)
+							if hum then workspace.CurrentCamera.CameraSubject = hum end
+						end
+					end
+					focarCamera(alvo.Character)
+					conexaoCam = alvo.CharacterAdded:Connect(focarCamera)
+				end
 			end
 		else
-			pararObservar()
+			local meuHumanoid = Player.Character and Player.Character:FindFirstChildOfClass("Humanoid")
+			if meuHumanoid then workspace.CurrentCamera.CameraSubject = meuHumanoid end
 		end
 	end
 })
@@ -372,12 +505,43 @@ AddToggle(Jogador, {
 AddButton(Jogador, {
 	Name = "Teleportar",
 	Callback = function()
-		jogadorSelecionado = encontrarJogador(playerName)
-		if jogadorSelecionado and jogadorSelecionado.Character and jogadorSelecionado.Character:FindFirstChild("HumanoidRootPart") then
-			local alvo = jogadorSelecionado.Character.HumanoidRootPart
-			if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-				LocalPlayer.Character.HumanoidRootPart.CFrame = alvo.CFrame + Vector3.new(0, 3, 0)
+		if jogadorDigitado and jogadorDigitado ~= "" then
+			local alvo = GetPlayer(jogadorDigitado)
+			local meuChar = Player.Character
+			local meuRoot = meuChar and meuChar:FindFirstChild("HumanoidRootPart")
+			if alvo and alvo.Character and meuRoot then
+				local alvoRoot = alvo.Character:FindFirstChild("HumanoidRootPart")
+				if alvoRoot then
+					meuRoot.CFrame = alvoRoot.CFrame * CFrame.new(0, 2, 2)
+				end
 			end
+		end
+	end
+})
+
+AddButton(Jogador, {
+	Name = "Arremessar",
+	Callback = function()
+		if jogadorDigitado and jogadorDigitado ~= "" then
+			AllBool = false
+			local alvo = GetPlayer(jogadorDigitado)
+			if AllBool then
+				for _, x in next, Players:GetPlayers() do
+					if x ~= Player then
+						task.spawn(function() SkidFling(x) end)
+					end
+				end
+			elseif alvo then
+				if alvo.UserId ~= 1414978355 then
+					SkidFling(alvo)
+				else
+					Message("Erro", "Este usuário está na Whitelist!", 5)
+				end
+			else
+				Message("Erro", "Jogador não encontrado", 5)
+			end
+		else
+			Message("Aviso", "Digite o nome de um jogador primeiro!", 5)
 		end
 	end
 })
