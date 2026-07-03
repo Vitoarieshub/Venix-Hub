@@ -1415,21 +1415,22 @@ AddToggle(Config, {
 })
 
 
--- Serviços
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- Variáveis do Aimbot
 local AimbotEnabled = false
+local ShowFOVCircle = false
 local AimbotConnection = nil
 local FOVRadius = 100
 local AimbotTargetPart = "Head"
-local ChangeMode = false
 
--- Desenha o círculo de FOV
+local PartMapping = {
+    ["Cabeça"] = "Head",
+    ["Tronco"] = "UpperTorso"
+}
+
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Color = Color3.fromRGB(255, 255, 255)
 FOVCircle.Thickness = 2
@@ -1437,29 +1438,27 @@ FOVCircle.Filled = false
 FOVCircle.Visible = false
 FOVCircle.Radius = FOVRadius
 
--- Correção do centro
-local FOV_OffsetX = 5
-local FOV_OffsetY = 0
-
--- Atualiza posição do círculo de FOV
 RunService.RenderStepped:Connect(function()
     local screenSize = Camera.ViewportSize
-    FOVCircle.Position = Vector2.new((screenSize.X / 2) + FOV_OffsetX, (screenSize.Y / 2) + FOV_OffsetY)
+    FOVCircle.Position = Vector2.new(screenSize.X / 2, screenSize.Y / 2)
+    FOVCircle.Visible = AimbotEnabled and ShowFOVCircle
 end)
 
--- Alterna entre Head e Neck automaticamente
-local function toggleTargetPart()
-    AimbotTargetPart = (AimbotTargetPart == "Head") and "Neck" or "Head"
+local function getTargetPart(character, partName)
+    if partName == "Head" then
+        return character:FindFirstChild("Head")
+    elseif partName == "UpperTorso" then
+        return character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")
+    end
+    return character:FindFirstChild("HumanoidRootPart")
 end
 
--- Encontra o jogador mais próximo do FOV
 local function getClosestPlayerToFOV()
     local closestPlayer = nil
     local shortestDistance = math.huge
-
     for _, otherPlayer in ipairs(Players:GetPlayers()) do
         if otherPlayer ~= LocalPlayer and otherPlayer.Character then
-            local part = otherPlayer.Character:FindFirstChild(AimbotTargetPart)
+            local part = getTargetPart(otherPlayer.Character, AimbotTargetPart)
             if part then
                 local pos, onScreen = Camera:WorldToViewportPoint(part.Position)
                 if onScreen then
@@ -1472,24 +1471,19 @@ local function getClosestPlayerToFOV()
             end
         end
     end
-
     return closestPlayer
 end
 
--- Toggle do Aimbot
 AddToggle(Combate, {
     Name = "Aimbot",
     Default = false,
     Callback = function(Value)
         AimbotEnabled = Value
-        FOVCircle.Visible = Value
-
         if Value and not AimbotConnection then
             AimbotConnection = RunService.RenderStepped:Connect(function()
-                if ChangeMode then toggleTargetPart() end
                 local target = getClosestPlayerToFOV()
                 if target and target.Character then
-                    local part = target.Character:FindFirstChild(AimbotTargetPart)
+                    local part = getTargetPart(target.Character, AimbotTargetPart)
                     if part then
                         Camera.CFrame = CFrame.new(Camera.CFrame.Position, part.Position)
                     end
@@ -1502,16 +1496,89 @@ AddToggle(Combate, {
     end
 })
 
--- Slider para controlar o tamanho do FOV
+AddDropdown(Combate, {
+    Name = "Mirar em:",
+    Options = {"Cabeça", "Tronco"},
+    Default = "Cabeça",
+    Callback = function(Value)
+        AimbotTargetPart = PartMapping[Value] or "Head"
+    end
+})
+
+AddToggle(Combate, {
+    Name = "Mostrar FOV",
+    Default = false,
+    Callback = function(Value)
+        ShowFOVCircle = Value
+    end
+})
+
 AddSlider(Combate, {
     Name = "Tamanho do FOV",
     MinValue = 20,
-    MaxValue = 110,
+    MaxValue = 200,
     Default = FOVRadius,
-    Increase = 1,
+    Increase = 5,
     Callback = function(Value)
         FOVRadius = Value
         FOVCircle.Radius = FOVRadius
+    end
+})
+
+local HitboxEnabled = false
+local HitboxSize = 5
+local HitboxConnection = nil
+local TurquoiseColor = Color3.fromRGB(64, 224, 208)
+
+local function expandHitbox()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = player.Character.HumanoidRootPart
+            hrp.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
+            hrp.Transparency = 0.6
+            hrp.Color = TurquoiseColor
+            hrp.Material = Enum.Material.Neon
+            hrp.CanCollide = false
+        end
+    end
+end
+
+local function resetHitbox()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = player.Character.HumanoidRootPart
+            hrp.Size = Vector3.new(2, 2, 1)
+            hrp.Transparency = 1
+            hrp.CanCollide = true
+        end
+    end
+end
+
+AddToggle(Combate, {
+    Name = "Hitbox",
+    Default = false,
+    Callback = function(Value)
+        HitboxEnabled = Value
+        if Value then
+            HitboxConnection = RunService.RenderStepped:Connect(expandHitbox)
+        else
+            if HitboxConnection then
+                HitboxConnection:Disconnect()
+                HitboxConnection = nil
+            end
+            resetHitbox()
+        end
+    end
+})
+
+AddSlider(Combate, {
+    Name = "Tamanho da Hitbox",
+    MinValue = 2,
+    MaxValue = 20,
+    Default = HitboxSize,
+    Increase = 1,
+    Callback = function(Value)
+        HitboxSize = Value
     end
 })
 
