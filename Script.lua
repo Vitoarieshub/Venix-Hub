@@ -1590,7 +1590,7 @@ AddSlider(Combate, {
 })
 
 AddToggle(Combate, {
-    Name = "Verificação de Parede",
+    Name = "Verificar Visíveis",
     Default = false,
     Callback = function(Value)
         WallCheckEnabled = Value
