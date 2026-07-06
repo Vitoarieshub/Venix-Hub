@@ -1422,6 +1422,8 @@ local Camera = workspace.CurrentCamera
 
 local AimbotEnabled = false
 local ShowFOVCircle = false
+local WallCheckEnabled = false
+local CrosshairEnabled = false
 local AimbotConnection = nil
 local FOVRadius = 100
 local AimbotTargetPart = "Head"
@@ -1438,19 +1440,81 @@ FOVCircle.Filled = false
 FOVCircle.Visible = false
 FOVCircle.Radius = FOVRadius
 
+local CrosshairL1 = Drawing.new("Line")
+local CrosshairL2 = Drawing.new("Line")
+
+local function isLookingAtPlayer()
+    local viewportCenter = Camera.ViewportSize / 2
+    local unitRay = Camera:ViewportPointToRay(viewportCenter.X, viewportCenter.Y)
+    
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = {LocalPlayer.Character}
+    
+    local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000, params)
+    
+    if result and result.Instance then
+        local hit = result.Instance
+        local char = hit.Parent:FindFirstChildOfClass("Humanoid") and hit.Parent or hit.Parent.Parent:FindFirstChildOfClass("Humanoid") and hit.Parent.Parent
+        if char then
+            local player = Players:GetPlayerFromCharacter(char)
+            if player and player ~= LocalPlayer then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function updateCrosshair()
+    if CrosshairEnabled then
+        local center = Camera.ViewportSize / 2
+        local size = 10
+        local isOver = isLookingAtPlayer()
+        local color = isOver and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(255, 255, 255)
+        
+        CrosshairL1.Visible = true
+        CrosshairL1.From = Vector2.new(center.X - size, center.Y)
+        CrosshairL1.To = Vector2.new(center.X + size, center.Y)
+        CrosshairL1.Color = color
+        CrosshairL1.Thickness = 2
+
+        CrosshairL2.Visible = true
+        CrosshairL2.From = Vector2.new(center.X, center.Y - size)
+        CrosshairL2.To = Vector2.new(center.X, center.Y + size)
+        CrosshairL2.Color = color
+        CrosshairL2.Thickness = 2
+    else
+        CrosshairL1.Visible = false
+        CrosshairL2.Visible = false
+    end
+end
+
 RunService.RenderStepped:Connect(function()
     local screenSize = Camera.ViewportSize
     FOVCircle.Position = Vector2.new(screenSize.X / 2, screenSize.Y / 2)
     FOVCircle.Visible = AimbotEnabled and ShowFOVCircle
+    updateCrosshair()
 end)
+
+local function isVisible(part)
+    if not WallCheckEnabled then return true end
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = {LocalPlayer.Character, part.Parent}
+    local result = workspace:Raycast(Camera.CFrame.Position, (part.Position - Camera.CFrame.Position).Unit * (part.Position - Camera.CFrame.Position).Magnitude, params)
+    return result == nil
+end
 
 local function getTargetPart(character, partName)
     if partName == "Head" then
         return character:FindFirstChild("Head")
     elseif partName == "UpperTorso" then
         return character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")
+    elseif partName == "HumanoidRootPart" then
+        return character:FindFirstChild("HumanoidRootPart")
     end
-    return character:FindFirstChild("HumanoidRootPart")
+    return character:FindFirstChild("Head")
 end
 
 local function getClosestPlayerToFOV()
@@ -1459,7 +1523,7 @@ local function getClosestPlayerToFOV()
     for _, otherPlayer in ipairs(Players:GetPlayers()) do
         if otherPlayer ~= LocalPlayer and otherPlayer.Character then
             local part = getTargetPart(otherPlayer.Character, AimbotTargetPart)
-            if part then
+            if part and isVisible(part) then
                 local pos, onScreen = Camera:WorldToViewportPoint(part.Position)
                 if onScreen then
                     local dist = (Vector2.new(pos.X, pos.Y) - FOVCircle.Position).Magnitude
@@ -1506,7 +1570,7 @@ AddDropdown(Combate, {
 })
 
 AddToggle(Combate, {
-    Name = "Mostrar FOV",
+    Name = "Mostrar Círculo",
     Default = false,
     Callback = function(Value)
         ShowFOVCircle = Value
@@ -1514,14 +1578,30 @@ AddToggle(Combate, {
 })
 
 AddSlider(Combate, {
-    Name = "Tamanho do FOV",
+    Name = "Tamanho do Círculo",
     MinValue = 20,
-    MaxValue = 200,
+    MaxValue = 500,
     Default = FOVRadius,
     Increase = 5,
     Callback = function(Value)
         FOVRadius = Value
         FOVCircle.Radius = FOVRadius
+    end
+})
+
+AddToggle(Combate, {
+    Name = "Verificação de Parede",
+    Default = false,
+    Callback = function(Value)
+        WallCheckEnabled = Value
+    end
+})
+
+AddToggle(Combate, {
+    Name = "Crosshair (Mira)",
+    Default = false,
+    Callback = function(Value)
+        CrosshairEnabled = Value
     end
 })
 
