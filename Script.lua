@@ -190,44 +190,36 @@ LocalPlayer.CharacterAdded:Connect(function(Character)
 	end
 end)
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
+local player = Players.LocalPlayer
+local noclipEnabled = false
 
--- Noclip
-local noclipConnection
-
-function toggleNoclip(enable)
-    if enable then
-        if not noclipConnection then
-            noclipConnection = game:GetService("RunService").Stepped:Connect(function()
-                for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end)
-        end
-    else
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
-        for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
-    end
-end
-
--- Toggle para ativar/desativar colisão
 AddToggle(Jogador, {
-    Name = "Desativar colisões", 
+    Name = "Atravessar Parede (Anti Bug)", 
     Default = false,
     Callback = function(Value)
-        toggleNoclip(Value)
+        noclipEnabled = Value
+        if not Value and player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            end
+        end
+        print("Noclip:", Value and "Ativado" or "Desativado")
     end
 })
 
+RunService.Stepped:Connect(function()
+    if noclipEnabled and player.Character then
+        for _, part in ipairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
 
 -- Infinite Jump
 local jumpConnection
