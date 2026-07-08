@@ -1306,12 +1306,12 @@ AddButton(Config, {
 
             -- Ajusta configurações para melhorar o FPS
             pcall(function()
-                settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 -- Reduz qualidade gráfica
-                workspace.GlobalShadows = false -- Remove sombras globais
+                settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+                workspace.GlobalShadows = false 
 
                 if game:FindFirstChild("Lighting") then
                     local lighting = game.Lighting
-                    lighting.FogEnd = 1e10 -- Remove neblina
+                    lighting.FogEnd = 1e10 
                     lighting.GlobalShadows = false
                     lighting.Brightness = 2
                 end
