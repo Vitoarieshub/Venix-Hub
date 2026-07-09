@@ -1386,7 +1386,7 @@ local function setXRay(state)
 end
 
 AddToggle(Config, {
-    Name = "X-Ray",
+    Name = "Raio X",
     Default = false,
     Callback = function(state)
         setXRay(state)
@@ -1395,7 +1395,7 @@ AddToggle(Config, {
 
 
 AddButton(Config, {
-    Name = "FPS Boost",
+    Name = "Aumento de FPS",
     Callback = function()
         print("Botão foi clicado!")
 
