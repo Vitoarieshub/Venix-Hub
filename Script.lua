@@ -1654,6 +1654,30 @@ AddSlider(Combate, {
     end
 })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local zoomInfinitoAtivo = false
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if zoomInfinitoAtivo then
+        task.wait(0.5)
+        LocalPlayer.CameraMaxZoomDistance = math.huge
+    end
+end)
+
+AddToggle(Config, {
+    Name = "Zoom Infinito",
+    Default = false,
+    Callback = function(state)
+        zoomInfinitoAtivo = state
+        if state then
+            LocalPlayer.CameraMaxZoomDistance = math.huge
+        else
+            LocalPlayer.CameraMaxZoomDistance = 128
+        end
+    end
+})
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
