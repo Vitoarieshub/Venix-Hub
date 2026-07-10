@@ -197,7 +197,7 @@ local player = Players.LocalPlayer
 local noclipEnabled = false
 
 AddToggle(Jogador, {
-    Name = "Atravessar Parede (Anti Bug)", 
+    Name = "Atravessar Parede", 
     Default = false,
     Callback = function(Value)
         noclipEnabled = Value
@@ -511,7 +511,7 @@ AddButton(Jogador, {
 })
 
 AddButton(Jogador, {
-	Name = "Arremessar",
+	Name = "Arremessar Jogador",
 	Callback = function()
 		if jogadorDigitado and jogadorDigitado ~= "" then
 			AllBool = false
@@ -1724,7 +1724,7 @@ AddToggle(Combate, {
 })
 
 AddToggle(Combate, {
-    Name = "Crosshair (Mira)",
+    Name = "Mira",
     Default = false,
     Callback = function(Value)
         CrosshairEnabled = Value
