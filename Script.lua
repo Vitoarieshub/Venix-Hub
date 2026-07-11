@@ -848,6 +848,7 @@ AddButton(Teleportes, {
 	end
 })
 
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
