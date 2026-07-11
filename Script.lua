@@ -848,7 +848,6 @@ AddButton(Teleportes, {
 	end
 })
 
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -861,7 +860,7 @@ local function criarBillboard(nome, adornee, offsetY)
 	local gui = Instance.new("BillboardGui")
 	gui.Name = nome
 	gui.Adornee = adornee
-	gui.Size = UDim2.new(0, 120, 0, 20)
+	gui.Size = UDim2.new(0, 200, 0, 20)
 	gui.StudsOffset = Vector3.new(0, offsetY, 0)
 	gui.AlwaysOnTop = true
 
@@ -881,6 +880,18 @@ local function criarBillboard(nome, adornee, offsetY)
 	return texto, gui
 end
 
+local function limparTodoESP()
+	for _, player in ipairs(Players:GetPlayers()) do
+		local char = player.Character
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			local esp = char.HumanoidRootPart:FindFirstChild("ESP_Info")
+			if esp then
+				esp:Destroy()
+			end
+		end
+	end
+end
+
 local function criarESP(player)
 	if player == LocalPlayer then
 		return
@@ -893,57 +904,51 @@ local function criarESP(player)
 			local humanoid = char and char:FindFirstChild("Humanoid")
 
 			if root and humanoid and humanoid.Health > 0 then
-
-				if espNomeAtivado and not root:FindFirstChild("ESP_Name") then
-					local texto = criarBillboard("ESP_Name", root, -3)
-					texto.Text = player.Name
+				local guiInfo = root:FindFirstChild("ESP_Info")
+				local texto
+				
+				if not guiInfo then
+					texto = criarBillboard("ESP_Info", root, -3.5)
+				else
+					texto = guiInfo:FindFirstChild("Texto")
 				end
 
-				if espDistAtivado and not root:FindFirstChild("ESP_Distance") then
-					criarBillboard("ESP_Distance", root, -4)
-				end
+				if texto then
+					local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+					local textoFinal = ""
 
-				local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-
-				if myRoot then
-					local distancia = math.floor((myRoot.Position - root.Position).Magnitude)
-
-					local guiDist = root:FindFirstChild("ESP_Distance")
-					if guiDist and guiDist:FindFirstChild("Texto") then
-						guiDist.Texto.Text = distancia .. "m"
+					if espNomeAtivado then
+						textoFinal = player.Name
 					end
+
+					if espDistAtivado and myRoot then
+						local distancia = math.floor((myRoot.Position - root.Position).Magnitude)
+						if espNomeAtivado then
+							textoFinal = textoFinal .. " - " .. distancia .. "m"
+						else
+							textoFinal = distancia .. "m"
+						end
+					end
+
+					texto.Text = textoFinal
+				end
+			else
+				local guiInfo = root and root:FindFirstChild("ESP_Info")
+				if guiInfo then
+					guiInfo:Destroy()
 				end
 			end
 
-			task.wait(0.2)
+			task.wait(0.1)
+		end
+		
+		local char = player.Character
+		local root = char and char:FindFirstChild("HumanoidRootPart")
+		local guiInfo = root and root:FindFirstChild("ESP_Info")
+		if guiInfo then
+			guiInfo:Destroy()
 		end
 	end)
-end
-
-local function limparESPNome()
-	for _, player in ipairs(Players:GetPlayers()) do
-		local char = player.Character
-
-		if char and char:FindFirstChild("HumanoidRootPart") then
-			local esp = char.HumanoidRootPart:FindFirstChild("ESP_Name")
-			if esp then
-				esp:Destroy()
-			end
-		end
-	end
-end
-
-local function limparESPDistancia()
-	for _, player in ipairs(Players:GetPlayers()) do
-		local char = player.Character
-
-		if char and char:FindFirstChild("HumanoidRootPart") then
-			local esp = char.HumanoidRootPart:FindFirstChild("ESP_Distance")
-			if esp then
-				esp:Destroy()
-			end
-		end
-	end
 end
 
 local function monitorarPlayer(player)
@@ -957,7 +962,6 @@ local function monitorarPlayer(player)
 
 	connections[player] = player.CharacterAdded:Connect(function()
 		task.wait(1)
-
 		if espNomeAtivado or espDistAtivado then
 			criarESP(player)
 		end
@@ -980,33 +984,36 @@ local function atualizarTodos()
 	end
 end
 
-AddToggle(Visuais,{
-	Name = "ESP Name",
+AddToggle(Visuais, {
+	Name = "ESP Nome",
 	Default = false,
 	Callback = function(Value)
 		espNomeAtivado = Value
-
 		if Value then
 			atualizarTodos()
 		else
-			limparESPNome()
+			if not espDistAtivado then
+				limparTodoESP()
+			end
 		end
 	end
 })
 
-AddToggle(Visuais,{
-	Name = "ESP Distance",
+AddToggle(Visuais, {
+	Name = "ESP Distância",
 	Default = false,
 	Callback = function(Value)
 		espDistAtivado = Value
-
 		if Value then
 			atualizarTodos()
 		else
-			limparESPDistancia()
+			if not espNomeAtivado then
+				limparTodoESP()
+			end
 		end
 	end
 })
+
 
 local espAtivado = false
 local Players = game:GetService("Players")
