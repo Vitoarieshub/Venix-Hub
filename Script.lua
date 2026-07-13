@@ -723,18 +723,6 @@ AddToggle(Teleportes, {
 	end
 })
 
-
--- BOTÃO: Remover Portais
-AddButton(Teleportes, {
-	Name = "Remover Portais",
-	Callback = function()
-		if portalA then portalA:Destroy() portalA = nil end
-		if portalB then portalB:Destroy() portalB = nil end
-		clickCount = 0
-		warn("Portais removidos.")
-	end
-})
-
 local savedPositions = {
     ["Posição 1"] = nil,
     ["Posição 2"] = nil
@@ -742,7 +730,7 @@ local savedPositions = {
 
 local slotSelecionado = "Posição 1"
 local teleporteSuaveAtivado = false
-local TEMPO_FIXO = 5
+local TEMPO_FIXO = 7
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
