@@ -723,85 +723,6 @@ AddToggle(Teleportes, {
 	end
 })
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-
-local LocalPlayer = Players.LocalPlayer
-local portalA, portalB = nil, nil
-local debounce = false
-local clickCount = 0
-
--- Função de criar portal
-local function createPortal(position, name, color)
-	local portal = Instance.new("Part")
-	portal.Size = Vector3.new(6, 10, 1)
-	portal.Anchored = true
-	portal.CanCollide = false
-	portal.Position = position
-	portal.BrickColor = BrickColor.new(color)
-	portal.Material = Enum.Material.Neon
-	portal.Transparency = 0.2
-	portal.Name = name
-	portal.Parent = Workspace
-
-	local decal = Instance.new("Decal")
-	decal.Texture = "rbxassetid://4848206463"
-	decal.Face = Enum.NormalId.Front
-	decal.Parent = portal
-
-	return portal
-end
-
--- Teleporte entre portais
-local function checkTouch()
-	if not portalA or not portalB then return end
-
-	local char = LocalPlayer.Character
-	if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-	local hrp = char.HumanoidRootPart
-
-	local function teleportIfNear(portal, destination)
-		if debounce then return end
-		if (hrp.Position - portal.Position).Magnitude < 6 then
-			debounce = true
-			hrp.CFrame = destination.CFrame + Vector3.new(0, 5, 0)
-			task.wait(1)
-			debounce = false
-		end
-	end
-
-	teleportIfNear(portalA, portalB)
-	teleportIfNear(portalB, portalA)
-end
-RunService.Heartbeat:Connect(checkTouch)
-
--- BOTÃO: Salvar posição com Portal
-AddButton(Teleportes, {
-	Name = "Salvar posição com Portal",
-	Callback = function()
-		local char = LocalPlayer.Character
-		if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-		local pos = char.HumanoidRootPart.Position
-
-		if clickCount == 0 then
-			if portalA then portalA:Destroy() end
-			portalA = createPortal(pos, "PortalA", "Lime green")
-			clickCount = 1
-			warn("Portal A salvo na sua posição!")
-		elseif clickCount == 1 then
-			if portalB then portalB:Destroy() end
-			portalB = createPortal(pos, "PortalB", "Bright red")
-			clickCount = 2
-			warn("Portal B salvo na sua posição!")
-		else
-			warn("Já existem dois portais! Use o botão Remover Portais para resetar.")
-		end
-	end
-})
 
 -- BOTÃO: Remover Portais
 AddButton(Teleportes, {
@@ -821,7 +742,7 @@ local savedPositions = {
 
 local slotSelecionado = "Posição 1"
 local teleporteSuaveAtivado = false
-local TEMPO_FIXO = 9
+local TEMPO_FIXO = 5
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
