@@ -1378,36 +1378,41 @@ AddToggle(Config, {
     end
 })
 
-
 AddButton(Config, {
     Name = "Aumento de FPS",
     Callback = function()
-        print("Botão foi clicado!")
-
         pcall(function()
-            -- Otimiza todas as partes para reduzir o impacto gráfico
-            for _, v in ipairs(workspace:GetDescendants()) do
+            local descendants = workspace:GetDescendants()
+            for i = 1, #descendants do
+                local v = descendants[i]
                 if v:IsA("Part") or v:IsA("MeshPart") or v:IsA("UnionOperation") then
-                    v.Material = Enum.Material.SmoothPlastic -- Remove texturas complexas
-                    v.Reflectance = 0 -- Remove reflexos
-                    v.CastShadow = false -- Desativa sombras
+                    v.Material = Enum.Material.SmoothPlastic
+                    v.Reflectance = 0
+                    v.CastShadow = false
                 elseif v:IsA("Decal") or v:IsA("Texture") then
-                    v.Transparency = 1 -- Oculta texturas e decals
+                    v.Transparency = 1
                 elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Explosion") then
-                    v:Destroy() -- Remove efeitos que consomem desempenho
+                    v:Destroy()
                 end
             end
 
-            -- Ajusta configurações para melhorar o FPS
             pcall(function()
                 settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
                 workspace.GlobalShadows = false 
 
-                if game:FindFirstChild("Lighting") then
-                    local lighting = game.Lighting
+                local lighting = game:GetService("Lighting")
+                if lighting then
                     lighting.FogEnd = 1e10 
                     lighting.GlobalShadows = false
                     lighting.Brightness = 2
+                    
+                    local effects = lighting:GetChildren()
+                    for i = 1, #effects do
+                        local effect = effects[i]
+                        if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") then
+                            effect:Destroy()
+                        end
+                    end
                 end
             end)
         end)
