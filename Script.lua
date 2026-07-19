@@ -50,7 +50,6 @@ MinimizeButton({
     Stroke = true,                      
     StrokeColor = Color3.fromRGB(0, 0, 0) 
 })
-   
 
 
 local Jogador = MakeTab({Name = "Jogador"})
@@ -58,7 +57,6 @@ local Visuais = MakeTab({Name = "Visual"})
 local Teleportes = MakeTab({Name = "Teleportes"})
 local Combate = MakeTab({Name = "Combate"})
 local Config = MakeTab({Name = "Config"})
-
 
 
 local Players = game:GetService("Players")
@@ -221,63 +219,7 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Infinite Jump
-local jumpConnection
 
-local function toggleInfiniteJump(enable)
-
-    if enable then
-
-        if not jumpConnection then
-
-            jumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
-
-                local player = game.Players.LocalPlayer
-
-                local character = player.Character or player.CharacterAdded:Wait()
-
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-
-                if humanoid then
-
-                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-
-                end
-
-            end)
-
-        end
-
-    else
-
-        if jumpConnection then
-
-            jumpConnection:Disconnect()
-
-            jumpConnection = nil
-
-        end
-
-    end
-
-end
-
-
--- Toggle pulo infinito
-
-local Toggle = AddToggle(Jogador, {
-
-    Name = "Pulo Infinito",
-
-    Default = false,
-
-    Callback = function(Value)
-
-        toggleInfiniteJump(Value)
-
-    end
-
-})
 
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
