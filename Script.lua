@@ -222,62 +222,32 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Infinite Jump
-local jumpConnection
+local UIS = game:GetService("UserInputService")
+local player = game.Players.LocalPlayer
+local jumpConn
 
-local function toggleInfiniteJump(enable)
-
+local function toggleJump(enable)
     if enable then
-
-        if not jumpConnection then
-
-            jumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
-
-                local player = game.Players.LocalPlayer
-
-                local character = player.Character or player.CharacterAdded:Wait()
-
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-
-                if humanoid then
-
-                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-
-                end
-
-            end)
-
-        end
-
+        if jumpConn then return end
+        jumpConn = UIS.JumpRequest:Connect(function()
+            local char = player.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if hum then
+                hum:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
     else
-
-        if jumpConnection then
-
-            jumpConnection:Disconnect()
-
-            jumpConnection = nil
-
+        if jumpConn then
+            jumpConn:Disconnect()
+            jumpConn = nil
         end
-
     end
-
 end
 
-
--- Toggle pulo infinito
-
-local Toggle = AddToggle(Jogador, {
-
+AddToggle(Jogador, {
     Name = "Pulo Infinito",
-
     Default = false,
-
-    Callback = function(Value)
-
-        toggleInfiniteJump(Value)
-
-    end
-
+    Callback = toggleJump
 })
 
 
